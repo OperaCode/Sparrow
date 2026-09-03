@@ -39,7 +39,7 @@ export function Button({
           justifyContent: 'center',
           paddingHorizontal: spacing.lg,
           ...(isPrimary && { backgroundColor: colors.primary }),
-          ...(isSecondary && { backgroundColor: colors.text }),
+          ...(isSecondary && { backgroundColor: colors.ink }),
           ...(isOutline && { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.border }),
           ...(isGhost && { backgroundColor: 'transparent' }),
           ...(disabled && { opacity: 0.4 }),
@@ -56,7 +56,7 @@ export function Button({
           style={[
             typography.bodyMedium,
             {
-              ...(isPrimary && { color: colors.white }),
+              ...(isPrimary && { color: colors.ink }),
               ...(isSecondary && { color: colors.white }),
               ...(isOutline && { color: colors.text }),
               ...(isGhost && { color: colors.text }),

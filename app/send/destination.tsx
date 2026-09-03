@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { colors, spacing, typography, radius } from '@/constants/theme';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
+import { IconBadge } from '@/components/IconBadge';
+import { StepHeader } from '@/components/StepHeader';
 import { useDraft } from '@/contexts/DraftContext';
-import { ArrowLeft } from 'lucide-react-native';
-import { ProgressDots } from './pickup';
 
 export default function DestinationScreen() {
   const { draft, updateDraft } = useDraft();
@@ -24,16 +24,13 @@ export default function DestinationScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-          <ArrowLeft color={colors.text} size={24} strokeWidth={2} />
-        </TouchableOpacity>
-        <ProgressDots step={1} />
-      </View>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <StepHeader step={1} />
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.bird}>🐦</Text>
+        <IconBadge style={styles.iconBadge} background={colors.coralLight}>
+          <Text style={styles.iconEmoji}>🚩</Text>
+        </IconBadge>
         <Text style={styles.title}>Where should we take it?</Text>
 
         <View style={styles.form}>
@@ -52,7 +49,7 @@ export default function DestinationScreen() {
           />
           <Input
             label="Recipient name"
-            placeholder="e.g. John"
+            placeholder="e.g. Jack Sparrow"
             value={draft.destinationContactName}
             onChangeText={(v) => updateDraft({ destinationContactName: v })}
             error={errors.destinationContactName}
@@ -75,9 +72,9 @@ export default function DestinationScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 60, paddingHorizontal: spacing.lg, paddingBottom: spacing.sm },
   content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl, flexGrow: 1 },
-  bird: { fontSize: 40, marginBottom: spacing.sm },
+  iconBadge: { alignSelf: 'flex-start', marginBottom: spacing.md },
+  iconEmoji: { fontSize: 26 },
   title: { ...typography.h2, color: colors.text, marginBottom: spacing.xl },
   form: { gap: spacing.md, marginBottom: spacing.xl },
 });

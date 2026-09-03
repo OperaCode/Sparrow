@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
-import { colors, spacing, typography, radius } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, spacing, typography, radius, gradients } from '@/constants/theme';
 import { Button } from '@/components/Button';
 import { useDraft } from '@/contexts/DraftContext';
-import { ArrowLeft, Copy, Check, Upload } from 'lucide-react-native';
+import { useAuth } from '@/contexts/AuthContext';
+import { useDeliveries } from '@/contexts/DeliveriesContext';
+import { Copy, Check, Upload } from 'lucide-react-native';
+import { StepHeader } from '@/components/StepHeader';
 
 const BANK_DETAILS = {
   accountName: 'Sparrow Logistics',
@@ -13,7 +17,9 @@ const BANK_DETAILS = {
 };
 
 export default function PaymentScreen() {
-  const { draft } = useDraft();
+  const { draft, resetDraft } = useDraft();
+  const { session } = useAuth();
+  const { addDelivery } = useDeliveries();
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [receiptUploaded, setReceiptUploaded] = useState(false);
@@ -32,25 +38,27 @@ export default function PaymentScreen() {
     setLoading(true);
     setError(null);
     setTimeout(() => {
+      const delivery = addDelivery(draft, session?.user.id ?? 'mock-user-id');
+      resetDraft();
       setLoading(false);
-      router.replace('/send/confirmation');
+      router.replace({
+        pathname: '/send/confirmation',
+        params: { deliveryId: delivery.id, deliveryCode: delivery.delivery_code },
+      });
     }, 800);
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-          <ArrowLeft color={colors.text} size={24} strokeWidth={2} />
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
+      <StepHeader step={4} />
 
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Pay for your Sparrow</Text>
 
-      <View style={styles.amountCard}>
+      <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.amountCard}>
         <Text style={styles.amountLabel}>Amount</Text>
         <Text style={styles.amountValue}>₦{draft.price?.toLocaleString() ?? '1,200'}</Text>
-      </View>
+      </LinearGradient>
 
       <View style={styles.bankCard}>
         <Text style={styles.bankSectionTitle}>Transfer to</Text>
@@ -103,17 +111,16 @@ export default function PaymentScreen() {
       {error && <Text style={styles.errorText}>{error}</Text>}
 
       <Button label="I've Made Payment" onPress={handleSubmitPayment} loading={loading} />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl, paddingTop: 60 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingBottom: spacing.sm, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1 },
+  content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl },
   title: { ...typography.h2, color: colors.text, marginBottom: spacing.xl },
   amountCard: {
-    backgroundColor: colors.primary,
     borderRadius: radius.lg,
     padding: spacing.xl,
     alignItems: 'center',

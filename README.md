@@ -1,3 +1,10 @@
 # Sparrow
 
-[![Open in Bolt](https://bolt.new/static/open-in-bolt.svg)](https://bolt.new/~/sb1-pqlmkfem)
+Hyperlocal delivery app built with Expo and Expo Router.
+
+## Development
+
+```bash
+npm install
+npm run dev
+```

@@ -1,36 +1,57 @@
 import { Platform } from 'react-native';
 
 export const colors = {
-  primary: '#FFB800',
-  primaryDark: '#E6A600',
-  primaryLight: '#FFE066',
-  primarySoft: '#FFF8E1',
+  primary: '#FFB703',
+  primaryDark: '#D97706',
+  primaryLight: '#FFD166',
+  primarySoft: '#FFF4CC',
+  ink: '#152436',
+  inkSoft: '#24415C',
+  skySoft: '#E4F6FE',
 
-  background: '#FAFAF8',
+  background: '#F7F8F4',
   surface: '#FFFFFF',
   surfaceAlt: '#F5F5F3',
 
-  text: '#1A1A1A',
-  textSecondary: '#6B6B6B',
-  textTertiary: '#9E9E9E',
+  text: '#152436',
+  textSecondary: '#5C6C7D',
+  textTertiary: '#8D9AA8',
 
   border: '#E8E8E5',
   borderLight: '#F0F0EE',
 
-  success: '#16A34A',
+  success: '#159A68',
   successLight: '#DCFCE7',
-  info: '#2563EB',
-  infoLight: '#DBEAFE',
+  info: '#168BC2',
+  infoLight: '#E4F6FE',
   warning: '#EA580C',
   warningLight: '#FFEDD5',
   error: '#DC2626',
   errorLight: '#FEE2E2',
+
+  // Playful accent palette — used to color-code categories, badges, and
+  // decorative touches so the app doesn't read as flat/monochrome.
+  coral: '#F26B4F',
+  coralLight: '#FFE4E0',
+  purple: '#8B5CF6',
+  purpleLight: '#EDE4FF',
+  teal: '#0D9488',
+  tealLight: '#D9F5F1',
+  sky: '#13A8E8',
+  skyLight: '#E0F4FF',
+  pink: '#EC4899',
+  pinkLight: '#FCE2F0',
 
   white: '#FFFFFF',
   black: '#000000',
 
   shadow: '#000000',
 } as const;
+
+export const gradients = {
+  primary: ['#FFC933', '#FF9F1C'] as const,
+  dark: ['#2A2A2A', '#111111'] as const,
+};
 
 export const spacing = {
   xs: 4,
@@ -45,9 +66,9 @@ export const spacing = {
 export const radius = {
   sm: 8,
   md: 12,
-  lg: 16,
-  xl: 24,
-  xxl: 32,
+  lg: 18,
+  xl: 26,
+  xxl: 34,
   pill: 999,
 } as const;
 

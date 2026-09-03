@@ -4,8 +4,9 @@ import { colors, spacing, typography, radius } from '@/constants/theme';
 import { EmptyState } from '@/components/EmptyState';
 import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
-import { mockDeliveries } from '@/lib/mockData';
-import type { Delivery } from '@/types';
+import { PackageSearch } from 'lucide-react-native';
+import { SparrowLogo } from '@/components/SparrowLogo';
+import { useDeliveries } from '@/contexts/DeliveriesContext';
 
 const STATUS_VARIANT: Record<string, 'success' | 'info' | 'warning' | 'error' | 'neutral' | 'primary'> = {
   delivered: 'success',
@@ -21,22 +22,26 @@ const STATUS_VARIANT: Record<string, 'success' | 'info' | 'warning' | 'error' | 
 };
 
 export default function DeliveriesScreen() {
-  const deliveries: Delivery[] = mockDeliveries;
+  const { deliveries } = useDeliveries();
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <View style={styles.headerBrand}>
+          <SparrowLogo size={18} color={colors.primary} />
+          <Text style={styles.brandLabel}>Sparrow</Text>
+        </View>
         <Text style={styles.title}>My Deliveries</Text>
       </View>
 
       {deliveries.length === 0 ? (
         <View style={styles.emptyContainer}>
           <EmptyState
-            icon="🐦"
+            icon={<PackageSearch color={colors.primaryDark} size={28} strokeWidth={1.75} />}
             title="Nothing here yet."
             message="Your Sparrow deliveries will appear here."
           />
-          <Button label="Send Your First Package" onPress={() => router.push('/send')} style={styles.emptyBtn} />
+          <Button label="Send Your First Package" onPress={() => router.push('/send/pickup')} style={styles.emptyBtn} />
         </View>
       ) : (
         <FlatList
@@ -78,6 +83,8 @@ export default function DeliveriesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: { paddingTop: 60, paddingHorizontal: spacing.lg, paddingBottom: spacing.md },
+  headerBrand: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xs },
+  brandLabel: { ...typography.captionMedium, color: colors.primaryDark },
   title: { ...typography.h1, color: colors.text },
   emptyContainer: { flex: 1, justifyContent: 'center' },
   emptyBtn: { marginHorizontal: spacing.lg, marginTop: spacing.lg },

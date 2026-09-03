@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Tex
 import { router } from 'expo-router';
 import { colors, spacing, typography, radius } from '@/constants/theme';
 import { Button } from '@/components/Button';
+import { SparrowLogo } from '@/components/SparrowLogo';
 
 export default function PhoneScreen() {
   const [phone, setPhone] = useState('');
@@ -30,11 +31,11 @@ export default function PhoneScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.content}>
-          <Text style={styles.bird}>🐦</Text>
+          <SparrowLogo size={56} color={colors.primary} />
           <Text style={styles.title}>Welcome to Sparrow</Text>
           <Text style={styles.subtitle}>Local delivery, made simple.</Text>
 
@@ -71,8 +72,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { flexGrow: 1 },
   content: { flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.xxxl + spacing.xl, justifyContent: 'center' },
-  bird: { fontSize: 64, textAlign: 'center', marginBottom: spacing.md },
-  title: { ...typography.h1, textAlign: 'center', color: colors.text },
+  title: { ...typography.h1, textAlign: 'center', color: colors.text, marginTop: spacing.md },
   subtitle: { ...typography.body, textAlign: 'center', color: colors.textSecondary, marginTop: spacing.xs },
   form: { marginTop: spacing.xxl, marginBottom: spacing.lg },
   label: { ...typography.label, marginBottom: spacing.xs + 2, color: colors.text },

@@ -1,8 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/contexts/AuthContext';
-import { colors, spacing, typography, radius } from '@/constants/theme';
+import { colors, spacing, typography, radius, gradients } from '@/constants/theme';
 import { ChevronRight, MapPin, Package, Bookmark, Gift, FileText, HelpCircle, LogOut } from 'lucide-react-native';
+import { Badge } from '@/components/Badge';
+import { SparrowLogo } from '@/components/SparrowLogo';
 
 export default function ProfileScreen() {
   const { profile, signOut } = useAuth();
@@ -14,29 +17,35 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const showComingSoon = () => Alert.alert('Coming soon', 'This feature is on the way.');
+
   const communityLabel = profile?.community
     ? profile.community.charAt(0).toUpperCase() + profile.community.slice(1)
     : '';
 
   const menuItems = [
-    { icon: Package, label: 'My Deliveries', onPress: () => router.push('/(tabs)/deliveries') },
-    { icon: Bookmark, label: 'Saved Locations', onPress: () => {} },
-    { icon: Gift, label: 'Rewards', onPress: () => {} },
-    { icon: FileText, label: 'Terms & Conditions', onPress: () => {} },
-    { icon: HelpCircle, label: 'Help', onPress: () => {} },
+    { icon: Package, label: 'My Deliveries', onPress: () => router.push('/(tabs)/deliveries'), comingSoon: false },
+    { icon: Bookmark, label: 'Saved Locations', onPress: showComingSoon, comingSoon: true },
+    { icon: Gift, label: 'Rewards', onPress: showComingSoon, comingSoon: true },
+    { icon: FileText, label: 'Terms & Conditions', onPress: showComingSoon, comingSoon: true },
+    { icon: HelpCircle, label: 'Help', onPress: showComingSoon, comingSoon: true },
   ];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
+        <View style={styles.headerBrand}>
+          <SparrowLogo size={18} color={colors.primary} />
+          <Text style={styles.brandLabel}>Sparrow</Text>
+        </View>
         <Text style={styles.title}>Profile</Text>
       </View>
 
       <View style={styles.profileCard}>
-        <View style={styles.avatar}>
+        <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}>
           <Text style={styles.avatarText}>{profile?.name?.charAt(0).toUpperCase() || '?'}</Text>
-        </View>
-        <Text style={styles.name}>{profile?.name || 'Unknown'}</Text>
+        </LinearGradient>
+        <Text style={styles.name}>{profile?.name || 'Jack Sparrow'}</Text>
         <Text style={styles.phone}>{profile?.phone || ''}</Text>
         <View style={styles.communityRow}>
           <MapPin color={colors.primary} size={14} strokeWidth={2} />
@@ -54,6 +63,7 @@ export default function ProfileScreen() {
           >
             <item.icon color={colors.textSecondary} size={20} strokeWidth={2} />
             <Text style={styles.menuLabel}>{item.label}</Text>
+            {item.comingSoon && <Badge label="Soon" variant="neutral" style={styles.soonBadge} />}
             <ChevronRight color={colors.textTertiary} size={18} strokeWidth={2} />
           </TouchableOpacity>
         ))}
@@ -73,6 +83,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl },
   header: { paddingTop: 60, paddingBottom: spacing.lg },
+  headerBrand: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xs },
+  brandLabel: { ...typography.captionMedium, color: colors.primaryDark },
   title: { ...typography.h1, color: colors.text },
   profileCard: {
     backgroundColor: colors.surface,
@@ -86,7 +98,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
@@ -113,6 +124,7 @@ const styles = StyleSheet.create({
   },
   menuItemBorder: { borderBottomWidth: 1, borderBottomColor: colors.borderLight },
   menuLabel: { ...typography.bodyMedium, color: colors.text, flex: 1 },
+  soonBadge: { marginRight: spacing.sm },
   signOutBtn: {
     flexDirection: 'row',
     alignItems: 'center',

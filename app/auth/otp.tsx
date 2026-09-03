@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Tex
 import { router, useLocalSearchParams } from 'expo-router';
 import { colors, spacing, typography, radius } from '@/constants/theme';
 import { Button } from '@/components/Button';
+import { SparrowLogo } from '@/components/SparrowLogo';
 import { useAuth } from '@/contexts/AuthContext';
 
 const OTP_LENGTH = 6;
@@ -55,11 +56,11 @@ export default function OtpScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.content}>
-          <Text style={styles.bird}>🐦</Text>
+          <SparrowLogo size={48} color={colors.primary} />
           <Text style={styles.title}>Verify your number</Text>
           <Text style={styles.subtitle}>
             We sent a code to {phone}. Enter it below.
@@ -100,8 +101,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { flexGrow: 1 },
   content: { flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.xxxl + spacing.xl, alignItems: 'center' },
-  bird: { fontSize: 56, marginBottom: spacing.md },
-  title: { ...typography.h1, textAlign: 'center', color: colors.text },
+  title: { ...typography.h1, textAlign: 'center', color: colors.text, marginTop: spacing.md },
   subtitle: { ...typography.body, textAlign: 'center', color: colors.textSecondary, marginTop: spacing.xs, marginBottom: spacing.xxl },
   otpRow: { flexDirection: 'row', gap: spacing.sm, justifyContent: 'center' },
   otpBox: {

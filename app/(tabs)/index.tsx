@@ -1,18 +1,19 @@
-import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/contexts/AuthContext';
-import { colors, spacing, typography, radius, shadows } from '@/constants/theme';
+import { useDeliveries } from '@/contexts/DeliveriesContext';
+import { colors, spacing, typography, radius, shadows, gradients } from '@/constants/theme';
 import { SparrowLogo } from '@/components/SparrowLogo';
-import { Button } from '@/components/Button';
+import { SparrowIllustration } from '@/components/SparrowIllustration';
 import { EmptyState } from '@/components/EmptyState';
 import { Badge } from '@/components/Badge';
-import { MapPin, ChevronRight, Search } from 'lucide-react-native';
-import { mockDeliveries } from '@/lib/mockData';
+import { MapPin, ChevronRight, Search, PackageSearch, Package, ShoppingBag } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const { profile } = useAuth();
-  const recentDelivery = mockDeliveries[0] ?? null;
+  const { deliveries } = useDeliveries();
+  const recentDelivery = deliveries[0] ?? null;
 
   const communityLabel = profile?.community
     ? profile.community.charAt(0).toUpperCase() + profile.community.slice(1)
@@ -30,11 +31,11 @@ export default function HomeScreen() {
           <Text style={styles.brandName}>Sparrow</Text>
         </View>
         <TouchableOpacity style={styles.avatarBtn} onPress={() => router.push('/(tabs)/profile')}>
-          <View style={styles.avatar}>
+          <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}>
             <Text style={styles.avatarText}>
               {profile?.name?.charAt(0).toUpperCase() || '?'}
             </Text>
-          </View>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
 
@@ -48,21 +49,36 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <View style={styles.heroCard}>
+      <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
         <View style={styles.heroContent}>
           <Text style={styles.heroTitle}>Local delivery,{'\n'}made simple.</Text>
           <Text style={styles.heroSubtitle}>
             Send anything around your community, quickly and easily.
           </Text>
           <View style={styles.heroIllustration}>
-            <Text style={styles.heroBird}>🐦</Text>
-            <Text style={styles.heroArrow}>→</Text>
-            <Text style={styles.heroPackage}>📦</Text>
+            <SparrowIllustration size={44} animated />
+            <View style={styles.heroDashLine} />
+            <View style={styles.heroDestDot} />
           </View>
         </View>
-      </View>
+      </LinearGradient>
 
-      <Button label="Send Package" onPress={() => router.push('/send')} style={styles.sendBtn} />
+      <View style={styles.actionGrid}>
+        <TouchableOpacity style={styles.actionCard} activeOpacity={0.85} onPress={() => router.push('/send/pickup')}>
+          <View style={[styles.actionIconBadge, { backgroundColor: colors.primarySoft }]}>
+            <Package color={colors.primaryDark} size={19} strokeWidth={1.8} />
+          </View>
+          <Text style={styles.actionTitle}>Send a Package</Text>
+          <Text style={styles.actionSubtitle}>Get something delivered</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionCard} activeOpacity={0.85} onPress={() => router.push('/errand/request')}>
+          <View style={[styles.actionIconBadge, { backgroundColor: colors.tealLight }]}>
+            <ShoppingBag color={colors.teal} size={19} strokeWidth={1.8} />
+          </View>
+          <Text style={styles.actionTitle}>Request an Errand</Text>
+          <Text style={styles.actionSubtitle}>Ask a Sparrow to get it for you</Text>
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity
         style={styles.trackCard}
@@ -103,7 +119,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       ) : (
         <EmptyState
-          icon="🐦"
+          icon={<PackageSearch color={colors.primaryDark} size={28} strokeWidth={1.75} />}
           title="Nothing here yet."
           message="Your Sparrow deliveries will appear here."
         />
@@ -123,7 +139,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -134,7 +149,6 @@ const styles = StyleSheet.create({
   locationText: { ...typography.captionMedium, color: colors.textSecondary },
   heroCard: {
     marginTop: spacing.xl,
-    backgroundColor: colors.primary,
     borderRadius: radius.xl,
     padding: spacing.xl,
     ...shadows.md,
@@ -142,11 +156,28 @@ const styles = StyleSheet.create({
   heroContent: {},
   heroTitle: { ...typography.h1, color: colors.white, fontSize: 26 },
   heroSubtitle: { ...typography.body, color: colors.white, opacity: 0.9, marginTop: spacing.xs, lineHeight: 22 },
-  heroIllustration: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.lg },
-  heroBird: { fontSize: 32 },
-  heroArrow: { fontSize: 24, color: colors.white, opacity: 0.7 },
-  heroPackage: { fontSize: 32 },
-  sendBtn: { marginTop: spacing.lg },
+  heroIllustration: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.lg },
+  heroDashLine: { flex: 1, height: 0, borderTopWidth: 2, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.75)' },
+  heroDestDot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: colors.white },
+  actionGrid: { flexDirection: 'row', gap: spacing.sm + 2, marginTop: spacing.lg },
+  actionCard: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+  },
+  actionIconBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm + 2,
+  },
+  actionTitle: { ...typography.captionMedium, color: colors.text, fontFamily: 'PlusJakartaSans-Bold', marginBottom: 2 },
+  actionSubtitle: { ...typography.small, color: colors.textSecondary, lineHeight: 15 },
   trackCard: {
     flexDirection: 'row',
     alignItems: 'center',

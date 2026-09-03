@@ -1,24 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { colors, spacing, typography, radius } from '@/constants/theme';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
+import { IconBadge } from '@/components/IconBadge';
+import { StepHeader } from '@/components/StepHeader';
 import { useDraft } from '@/contexts/DraftContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft } from 'lucide-react-native';
-import { TouchableOpacity } from 'react-native';
+import { UserRound } from 'lucide-react-native';
 
 export default function PickupScreen() {
   const { draft, updateDraft } = useDraft();
   const { profile } = useAuth();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    updateDraft({
+      pickupContactName: profile?.name || '',
+      pickupContactPhone: profile?.phone || '',
+    });
+    // Prefetch once when entering the flow — the sender is always the logged-in user.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleContinue = () => {
     const newErrors: Record<string, string> = {};
     if (!draft.pickupAddress.trim()) newErrors.pickupAddress = 'Address is required';
-    if (!draft.pickupContactName.trim()) newErrors.pickupContactName = 'Sender name is required';
-    if (!draft.pickupContactPhone.trim()) newErrors.pickupContactPhone = 'Sender phone is required';
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
@@ -27,17 +35,26 @@ export default function PickupScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-          <ArrowLeft color={colors.text} size={24} strokeWidth={2} />
-        </TouchableOpacity>
-        <ProgressDots step={0} />
-      </View>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <StepHeader step={0} />
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.bird}>📍</Text>
+        <IconBadge style={styles.iconBadge} background={colors.skyLight}>
+          <Text style={styles.iconEmoji}>📍</Text>
+        </IconBadge>
         <Text style={styles.title}>Where are we picking it up?</Text>
+
+        <View style={styles.senderCard}>
+          <View style={styles.senderAvatar}>
+            <UserRound color={colors.primaryDark} size={18} strokeWidth={2} />
+          </View>
+          <View style={styles.senderText}>
+            <Text style={styles.senderLabel}>Sending as</Text>
+            <Text style={styles.senderValue}>
+              {profile?.name || 'Jack Sparrow'} · {profile?.phone || ''}
+            </Text>
+          </View>
+        </View>
 
         <View style={styles.form}>
           <Input
@@ -53,21 +70,6 @@ export default function PickupScreen() {
             value={draft.pickupLandmark}
             onChangeText={(v) => updateDraft({ pickupLandmark: v })}
           />
-          <Input
-            label="Sender name"
-            placeholder="e.g. Raphael"
-            value={draft.pickupContactName}
-            onChangeText={(v) => updateDraft({ pickupContactName: v })}
-            error={errors.pickupContactName}
-          />
-          <Input
-            label="Sender phone"
-            placeholder="e.g. 801 234 5678"
-            value={draft.pickupContactPhone}
-            onChangeText={(v) => updateDraft({ pickupContactPhone: v })}
-            keyboardType="phone-pad"
-            error={errors.pickupContactPhone}
-          />
         </View>
 
         <Button label="Continue" onPress={handleContinue} />
@@ -76,32 +78,31 @@ export default function PickupScreen() {
   );
 }
 
-export function ProgressDots({ step }: { step: number }) {
-  const steps = [0, 1, 2];
-  return (
-    <View style={styles.dots}>
-      {steps.map((s, i) => (
-        <View key={i} style={styles.dotRow}>
-          <View style={[styles.dot, i < step && styles.dotDone, i === step && styles.dotActive]} />
-          {i < steps.length - 1 && <View style={[styles.line, i < step && styles.lineDone]} />}
-        </View>
-      ))}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 60, paddingHorizontal: spacing.lg, paddingBottom: spacing.sm },
   content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl, flexGrow: 1 },
-  bird: { fontSize: 40, marginBottom: spacing.sm },
-  title: { ...typography.h2, color: colors.text, marginBottom: spacing.xl },
+  iconBadge: { alignSelf: 'flex-start', marginBottom: spacing.md },
+  iconEmoji: { fontSize: 28 },
+  title: { ...typography.h2, color: colors.text, marginBottom: spacing.lg },
+  senderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm + 2,
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  senderAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  senderText: { flex: 1 },
+  senderLabel: { ...typography.small, color: colors.primaryDark },
+  senderValue: { ...typography.bodyMedium, color: colors.text, marginTop: 2 },
   form: { gap: spacing.md, marginBottom: spacing.xl },
-  dots: { flexDirection: 'row', alignItems: 'center' },
-  dotRow: { flexDirection: 'row', alignItems: 'center' },
-  dot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.border },
-  dotActive: { backgroundColor: colors.primary },
-  dotDone: { backgroundColor: colors.primary },
-  line: { width: 24, height: 2, backgroundColor: colors.border },
-  lineDone: { backgroundColor: colors.primary },
 });

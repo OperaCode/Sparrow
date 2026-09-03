@@ -1,8 +1,11 @@
+import type { ReactNode } from 'react';
 import { Text, View, StyleSheet, type ViewStyle } from 'react-native';
 import { colors, spacing, typography, radius } from '@/constants/theme';
+import { IconBadge } from '@/components/IconBadge';
+import { PackageSearch } from 'lucide-react-native';
 
 interface EmptyStateProps {
-  icon?: string;
+  icon?: ReactNode;
   title: string;
   message: string;
   style?: ViewStyle;
@@ -11,7 +14,9 @@ interface EmptyStateProps {
 export function EmptyState({ icon, title, message, style }: EmptyStateProps) {
   return (
     <View style={[styles.container, style]}>
-      {icon && <Text style={styles.icon}>{icon}</Text>}
+      <IconBadge size={64} style={styles.icon}>
+        {icon ?? <PackageSearch color={colors.primaryDark} size={28} strokeWidth={1.75} />}
+      </IconBadge>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>
     </View>
@@ -26,7 +31,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   icon: {
-    fontSize: 48,
+    backgroundColor: colors.primarySoft,
     marginBottom: spacing.md,
   },
   title: {

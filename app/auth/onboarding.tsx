@@ -5,6 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { colors, spacing, typography, radius } from '@/constants/theme';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
+import { IconBadge } from '@/components/IconBadge';
+import { SparrowIllustration } from '@/components/SparrowIllustration';
+import { Check } from 'lucide-react-native';
 import { mockProfile } from '@/lib/mockData';
 import type { Community } from '@/types';
 
@@ -48,20 +51,22 @@ export default function OnboardingScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.content}>
           {step === 0 ? (
             <>
-              <Text style={styles.bird}>👋</Text>
+              <View style={styles.heroWrap}>
+                <SparrowIllustration size={150} animated />
+              </View>
               <Text style={styles.title}>Nice to meet you!</Text>
               <Text style={styles.subtitle}>What should we call you?</Text>
 
               <View style={styles.form}>
                 <Input
                   label="Your name"
-                  placeholder="e.g. Raphael"
+                  placeholder="e.g. Jack Sparrow"
                   value={name}
                   onChangeText={setName}
                   autoComplete="name"
@@ -75,7 +80,9 @@ export default function OnboardingScreen() {
             </>
           ) : (
             <>
-              <Text style={styles.bird}>📍</Text>
+              <IconBadge style={styles.iconBadge} background={colors.skyLight}>
+                <Text style={styles.iconEmoji}>📍</Text>
+              </IconBadge>
               <Text style={styles.title}>Where are you based?</Text>
               <Text style={styles.subtitle}>Select your community to get started.</Text>
 
@@ -113,7 +120,7 @@ function CommunityCard({ label, selected, onPress }: { label: string; selected: 
     >
       <Text style={styles.communityIcon}>📍</Text>
       <Text style={[styles.communityLabel, selected && styles.communityLabelSelected]}>{label}</Text>
-      {selected && <Text style={styles.checkmark}>✓</Text>}
+      {selected && <Check color={colors.primary} size={18} strokeWidth={3} />}
     </TouchableOpacity>
   );
 }
@@ -122,7 +129,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { flexGrow: 1 },
   content: { flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.xxxl + spacing.xl, justifyContent: 'center' },
-  bird: { fontSize: 56, textAlign: 'center', marginBottom: spacing.md },
+  iconBadge: { marginBottom: spacing.md },
+  iconEmoji: { fontSize: 32 },
+  heroWrap: { alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: spacing.md },
   title: { ...typography.h1, textAlign: 'center', color: colors.text },
   subtitle: { ...typography.body, textAlign: 'center', color: colors.textSecondary, marginTop: spacing.xs, marginBottom: spacing.xxl },
   form: { marginBottom: spacing.lg },
@@ -130,6 +139,7 @@ const styles = StyleSheet.create({
   communityCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.md,
     padding: spacing.md + 2,
     backgroundColor: colors.surface,
     borderWidth: 1.5,
@@ -140,9 +150,8 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     backgroundColor: colors.primarySoft,
   },
-  communityIcon: { fontSize: 20, marginRight: spacing.md },
+  communityIcon: { fontSize: 20 },
   communityLabel: { ...typography.bodyMedium, flex: 1, color: colors.text },
   communityLabelSelected: { color: colors.primaryDark, fontFamily: 'PlusJakartaSans-Bold' },
-  checkmark: { fontSize: 18, color: colors.primary, fontFamily: 'PlusJakartaSans-Bold' },
   errorText: { ...typography.small, color: colors.error, textAlign: 'center', marginBottom: spacing.md },
 });

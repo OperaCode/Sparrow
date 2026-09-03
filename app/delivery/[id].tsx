@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { colors, spacing, typography, radius } from '@/constants/theme';
 import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
-import { ArrowLeft, MapPin, Package, Phone, User } from 'lucide-react-native';
-import { mockDeliveries, getMockDeliveryById } from '@/lib/mockData';
+import { ArrowLeft, MapPin, Package, Phone, User, SearchX } from 'lucide-react-native';
+import { useDeliveries } from '@/contexts/DeliveriesContext';
 import type { Delivery, DeliveryStatus } from '@/types';
 
 const STATUS_STEPS: { status: DeliveryStatus; label: string }[] = [
@@ -28,7 +28,8 @@ function getStatusIndex(status: DeliveryStatus): number {
 
 export default function DeliveryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const delivery: Delivery | null = id ? getMockDeliveryById(id) : mockDeliveries[0];
+  const { deliveries, getDeliveryById } = useDeliveries();
+  const delivery: Delivery | null = id ? getDeliveryById(id) : deliveries[0] ?? null;
 
   if (!delivery) {
     return (
@@ -38,7 +39,11 @@ export default function DeliveryDetailScreen() {
             <ArrowLeft color={colors.text} size={24} strokeWidth={2} />
           </TouchableOpacity>
         </View>
-        <EmptyState icon="🐦" title="Delivery not found" message="This delivery may have been cancelled or removed." />
+        <EmptyState
+          icon={<SearchX color={colors.primaryDark} size={28} strokeWidth={1.75} />}
+          title="Delivery not found"
+          message="This delivery may have been cancelled or removed."
+        />
       </View>
     );
   }
@@ -129,7 +134,12 @@ export default function DeliveryDetailScreen() {
       )}
 
       {delivery.status === 'delivered' && (
-        <Button label="Rate Sparrow" variant="outline" onPress={() => {}} style={styles.rateBtn} />
+        <Button
+          label="Rate Sparrow"
+          variant="outline"
+          onPress={() => Alert.alert('Coming soon', 'Ratings are on the way.')}
+          style={styles.rateBtn}
+        />
       )}
     </ScrollView>
   );

@@ -36,6 +36,13 @@ export type PackageCategory =
 
 export type PackageSize = 'small' | 'medium' | 'large';
 
+export type ErrandCategory =
+  | 'groceries'
+  | 'pharmacy'
+  | 'food_pickup'
+  | 'bill_payment'
+  | 'other';
+
 export interface UserProfile {
   id: string;
   phone: string;

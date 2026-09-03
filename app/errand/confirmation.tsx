@@ -1,14 +1,14 @@
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Check } from 'lucide-react-native';
-import { colors, spacing, typography, radius } from '@/constants/theme';
+import { colors, spacing, typography } from '@/constants/theme';
 import { Button } from '@/components/Button';
 import ConfettiCannon from 'react-native-confetti-cannon';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function ConfirmationScreen() {
-  const { deliveryId, deliveryCode } = useLocalSearchParams<{ deliveryId: string; deliveryCode: string }>();
+export default function ErrandConfirmationScreen() {
+  const { total } = useLocalSearchParams<{ total: string }>();
 
   return (
     <View style={styles.container}>
@@ -16,10 +16,10 @@ export default function ConfirmationScreen() {
         <View style={styles.circle}>
           <Check color={colors.white} size={40} strokeWidth={3} />
         </View>
-        <Text style={styles.title}>Payment received</Text>
+        <Text style={styles.title}>Errand requested</Text>
         <Text style={styles.subtitle}>
-          {deliveryCode ? `Your delivery ${deliveryCode} is being confirmed. ` : ''}
-          We're confirming your payment and getting your Sparrow ready.
+          We're finding a Sparrow near you{total ? ` — have ₦${total} ready to hand over` : ''}. You'll get a
+          notification once someone accepts.
         </Text>
       </View>
 
@@ -27,12 +27,6 @@ export default function ConfirmationScreen() {
 
       <View style={styles.footer}>
         <Button label="Back to Home" onPress={() => router.replace('/(tabs)')} />
-        <Button
-          label="Track Delivery"
-          variant="ghost"
-          onPress={() => router.replace(deliveryId ? `/delivery/${deliveryId}` : '/(tabs)/deliveries')}
-          style={styles.trackBtn}
-        />
       </View>
     </View>
   );
@@ -47,11 +41,10 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.success,
+    backgroundColor: colors.teal,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg,
   },
   footer: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl },
-  trackBtn: { marginTop: spacing.sm },
 });
