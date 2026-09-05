@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { colors, spacing, typography, radius } from '@/constants/theme';
 import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { DeliveryMap } from '@/components/DeliveryMap';
-import { ArrowLeft, MapPin, Package, Phone, User, SearchX } from 'lucide-react-native';
+import { RatingModal } from '@/components/RatingModal';
+import { ArrowLeft, MapPin, Package, Phone, User, SearchX, Star, PhoneCall, MessageCircle } from 'lucide-react-native';
 import { useDeliveries } from '@/contexts/DeliveriesContext';
 import type { Delivery, DeliveryStatus } from '@/types';
 
@@ -29,8 +30,9 @@ function getStatusIndex(status: DeliveryStatus): number {
 
 export default function DeliveryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { deliveries, getDeliveryById } = useDeliveries();
+  const { deliveries, getDeliveryById, rateDelivery, cancelDelivery } = useDeliveries();
   const delivery: Delivery | null = id ? getDeliveryById(id) : deliveries[0] ?? null;
+  const [ratingModalVisible, setRatingModalVisible] = useState(false);
 
   if (!delivery) {
     return (
@@ -63,6 +65,27 @@ export default function DeliveryDetailScreen() {
     delivery.pickup_longitude != null &&
     delivery.destination_latitude != null &&
     delivery.destination_longitude != null;
+  const isCancellable = currentStepIndex >= 0 && currentStepIndex < pickedUpIndex;
+  const isCancelled = delivery.status === 'cancelled';
+
+  const handleCancel = () => {
+    Alert.alert(
+      'Cancel this delivery?',
+      'Your Sparrow will be notified and the delivery will be stopped.',
+      [
+        { text: 'Keep it', style: 'cancel' },
+        { text: 'Cancel delivery', style: 'destructive', onPress: () => cancelDelivery(delivery.id) },
+      ],
+    );
+  };
+
+  const handleCall = () => {
+    if (delivery.rider_phone) Linking.openURL(`tel:${delivery.rider_phone.replace(/\s/g, '')}`);
+  };
+
+  const handleMessage = () => {
+    if (delivery.rider_phone) Linking.openURL(`sms:${delivery.rider_phone.replace(/\s/g, '')}`);
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -79,6 +102,34 @@ export default function DeliveryDetailScreen() {
           {delivery.pickup_address.split(',')[0]} → {delivery.destination_address.split(',')[0]}
         </Text>
       </View>
+
+      {isCancelled && (
+        <View style={styles.cancelledBanner}>
+          <Text style={styles.cancelledText}>This delivery was cancelled.</Text>
+        </View>
+      )}
+
+      {delivery.rider_name && !isCancelled && (
+        <View style={styles.riderCard}>
+          <View style={styles.riderInfo}>
+            <View style={styles.riderAvatar}>
+              <Text style={styles.riderAvatarText}>{delivery.rider_name.charAt(0)}</Text>
+            </View>
+            <View>
+              <Text style={styles.riderLabel}>Your Sparrow</Text>
+              <Text style={styles.riderName}>{delivery.rider_name}</Text>
+            </View>
+          </View>
+          <View style={styles.riderActions}>
+            <TouchableOpacity style={styles.riderActionBtn} activeOpacity={0.85} onPress={handleMessage} hitSlop={4}>
+              <MessageCircle color={colors.primaryDark} size={18} strokeWidth={2} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.riderActionBtn} activeOpacity={0.85} onPress={handleCall} hitSlop={4}>
+              <PhoneCall color={colors.primaryDark} size={18} strokeWidth={2} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {hasCoordinates && (
         <View style={styles.mapWrap}>
@@ -159,13 +210,46 @@ export default function DeliveryDetailScreen() {
       )}
 
       {delivery.status === 'delivered' && (
-        <Button
-          label="Rate Sparrow"
-          variant="outline"
-          onPress={() => Alert.alert('Coming soon', 'Ratings are on the way.')}
-          style={styles.rateBtn}
-        />
+        delivery.rating ? (
+          <View style={styles.ratedCard}>
+            <View style={styles.ratedStars}>
+              {[1, 2, 3, 4, 5].map((value) => (
+                <Star
+                  key={value}
+                  color={value <= delivery.rating! ? colors.primary : colors.border}
+                  fill={value <= delivery.rating! ? colors.primary : 'transparent'}
+                  size={18}
+                  strokeWidth={1.5}
+                />
+              ))}
+            </View>
+            {delivery.rating_comment ? <Text style={styles.ratedComment}>"{delivery.rating_comment}"</Text> : null}
+          </View>
+        ) : (
+          <Button
+            label="Rate Sparrow"
+            variant="outline"
+            onPress={() => setRatingModalVisible(true)}
+            style={styles.rateBtn}
+          />
+        )
       )}
+
+      {isCancellable && (
+        <TouchableOpacity style={styles.cancelBtn} activeOpacity={0.85} onPress={handleCancel}>
+          <Text style={styles.cancelText}>Cancel Delivery</Text>
+        </TouchableOpacity>
+      )}
+
+      <RatingModal
+        visible={ratingModalVisible}
+        deliveryCode={delivery.delivery_code}
+        onClose={() => setRatingModalVisible(false)}
+        onSubmit={(rating, comment) => {
+          rateDelivery(delivery.id, rating, comment);
+          setRatingModalVisible(false);
+        }}
+      />
     </ScrollView>
   );
 }
@@ -187,6 +271,45 @@ const styles = StyleSheet.create({
   routeSummary: { marginBottom: spacing.lg },
   routeText: { ...typography.body, color: colors.textSecondary },
   mapWrap: { marginBottom: spacing.lg },
+  cancelledBanner: {
+    backgroundColor: colors.errorLight,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  cancelledText: { ...typography.bodyMedium, color: colors.error, textAlign: 'center' },
+  riderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    marginBottom: spacing.lg,
+  },
+  riderInfo: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm + 2 },
+  riderAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  riderAvatarText: { ...typography.h3, color: colors.primaryDark },
+  riderLabel: { ...typography.small, color: colors.textTertiary },
+  riderName: { ...typography.bodyMedium, color: colors.text, fontFamily: 'PlusJakartaSans-Bold', marginTop: 2 },
+  riderActions: { flexDirection: 'row', gap: spacing.sm },
+  riderActionBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   timelineCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -232,4 +355,23 @@ const styles = StyleSheet.create({
   pinValue: { fontSize: 36, fontFamily: 'PlusJakartaSans-Bold', color: colors.text, letterSpacing: 8, marginTop: spacing.xs },
   pinNote: { ...typography.small, color: colors.textSecondary, marginTop: spacing.xs },
   rateBtn: { marginTop: spacing.sm },
+  ratedCard: {
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
+  ratedStars: { flexDirection: 'row', gap: 4, marginBottom: spacing.xs },
+  ratedComment: { ...typography.caption, color: colors.primaryDark, fontStyle: 'italic', textAlign: 'center' },
+  cancelBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    marginTop: spacing.sm,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.errorLight,
+  },
+  cancelText: { ...typography.bodyMedium, color: colors.error, fontFamily: 'PlusJakartaSans-SemiBold' },
 });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { colors, spacing, typography, radius } from '@/constants/theme';
 import { Button } from '@/components/Button';
@@ -7,9 +7,12 @@ import { Input } from '@/components/Input';
 import { IconBadge } from '@/components/IconBadge';
 import { StepHeader } from '@/components/StepHeader';
 import { useDraft } from '@/contexts/DraftContext';
+import { useAddressBook } from '@/contexts/AddressBookContext';
+import { Bookmark } from 'lucide-react-native';
 
 export default function DestinationScreen() {
   const { draft, updateDraft } = useDraft();
+  const { savedAddresses } = useAddressBook();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleContinue = () => {
@@ -32,6 +35,31 @@ export default function DestinationScreen() {
           <Text style={styles.iconEmoji}>🚩</Text>
         </IconBadge>
         <Text style={styles.title}>Where should we take it?</Text>
+
+        {savedAddresses.length > 0 && (
+          <View style={styles.chipRow}>
+            {savedAddresses.map((a) => (
+              <TouchableOpacity
+                key={a.id}
+                style={styles.chip}
+                activeOpacity={0.85}
+                onPress={() => {
+                  updateDraft({
+                    destinationAddress: a.address,
+                    destinationLandmark: a.landmark || '',
+                    destinationContactName: a.contact_name,
+                    destinationContactPhone: a.contact_phone,
+                    destinationZone: a.zone,
+                  });
+                  setErrors({});
+                }}
+              >
+                <Bookmark color={colors.primaryDark} size={14} strokeWidth={2} />
+                <Text style={styles.chipText}>{a.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         <View style={styles.form}>
           <Input
@@ -77,4 +105,15 @@ const styles = StyleSheet.create({
   iconEmoji: { fontSize: 26 },
   title: { ...typography.h2, color: colors.text, marginBottom: spacing.xl },
   form: { gap: spacing.md, marginBottom: spacing.xl },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.xs + 2,
+    paddingHorizontal: spacing.sm + 2,
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.pill,
+  },
+  chipText: { ...typography.captionMedium, color: colors.primaryDark },
 });

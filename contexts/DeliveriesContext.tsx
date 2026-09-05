@@ -20,6 +20,8 @@ interface DeliveriesContextValue {
   deliveries: Delivery[];
   addDelivery: (draft: DeliveryDraft, customerId: string) => Delivery;
   getDeliveryById: (id: string) => Delivery | null;
+  rateDelivery: (id: string, rating: number, comment: string) => void;
+  cancelDelivery: (id: string) => void;
 }
 
 const DeliveriesContext = createContext<DeliveriesContextValue>({
@@ -28,6 +30,8 @@ const DeliveriesContext = createContext<DeliveriesContextValue>({
     throw new Error('useDeliveries must be used within a DeliveriesProvider');
   },
   getDeliveryById: () => null,
+  rateDelivery: () => {},
+  cancelDelivery: () => {},
 });
 
 export function DeliveriesProvider({ children }: { children: ReactNode }) {
@@ -44,6 +48,8 @@ export function DeliveriesProvider({ children }: { children: ReactNode }) {
       delivery_code: nextDeliveryCode(deliveries),
       customer_id: customerId,
       rider_id: null,
+      rider_name: null,
+      rider_phone: null,
       pickup_address: draft.pickupAddress,
       pickup_landmark: draft.pickupLandmark || null,
       pickup_contact_name: draft.pickupContactName,
@@ -68,6 +74,8 @@ export function DeliveriesProvider({ children }: { children: ReactNode }) {
       pickup_photo_url: null,
       delivery_photo_url: null,
       status: 'payment_submitted',
+      rating: null,
+      rating_comment: null,
       created_at: new Date().toISOString(),
       assigned_at: null,
       picked_up_at: null,
@@ -80,8 +88,18 @@ export function DeliveriesProvider({ children }: { children: ReactNode }) {
 
   const getDeliveryById = (id: string) => deliveries.find((d) => d.id === id) ?? null;
 
+  const rateDelivery = (id: string, rating: number, comment: string) => {
+    setDeliveries((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, rating, rating_comment: comment || null } : d)),
+    );
+  };
+
+  const cancelDelivery = (id: string) => {
+    setDeliveries((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'cancelled' } : d)));
+  };
+
   return (
-    <DeliveriesContext.Provider value={{ deliveries, addDelivery, getDeliveryById }}>
+    <DeliveriesContext.Provider value={{ deliveries, addDelivery, getDeliveryById, rateDelivery, cancelDelivery }}>
       {children}
     </DeliveriesContext.Provider>
   );

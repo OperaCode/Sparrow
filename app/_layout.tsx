@@ -11,6 +11,7 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { DeliveriesProvider } from '@/contexts/DeliveriesContext';
+import { AddressBookProvider } from '@/contexts/AddressBookContext';
 
 if (Platform.OS !== 'web') {
   SplashScreen.preventAutoHideAsync();
@@ -37,10 +38,12 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <DeliveriesProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="dark" />
+        <AddressBookProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="dark" />
+        </AddressBookProvider>
       </DeliveriesProvider>
     </AuthProvider>
   );

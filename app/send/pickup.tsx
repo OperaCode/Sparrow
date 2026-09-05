@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { colors, spacing, typography, radius } from '@/constants/theme';
 import { Button } from '@/components/Button';
@@ -8,11 +8,13 @@ import { IconBadge } from '@/components/IconBadge';
 import { StepHeader } from '@/components/StepHeader';
 import { useDraft } from '@/contexts/DraftContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserRound } from 'lucide-react-native';
+import { useAddressBook } from '@/contexts/AddressBookContext';
+import { UserRound, Bookmark } from 'lucide-react-native';
 
 export default function PickupScreen() {
   const { draft, updateDraft } = useDraft();
   const { profile } = useAuth();
+  const { savedAddresses } = useAddressBook();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -55,6 +57,25 @@ export default function PickupScreen() {
             </Text>
           </View>
         </View>
+
+        {savedAddresses.length > 0 && (
+          <View style={styles.chipRow}>
+            {savedAddresses.map((a) => (
+              <TouchableOpacity
+                key={a.id}
+                style={styles.chip}
+                activeOpacity={0.85}
+                onPress={() => {
+                  updateDraft({ pickupAddress: a.address, pickupLandmark: a.landmark || '' });
+                  setErrors({});
+                }}
+              >
+                <Bookmark color={colors.primaryDark} size={14} strokeWidth={2} />
+                <Text style={styles.chipText}>{a.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         <View style={styles.form}>
           <Input
@@ -105,4 +126,15 @@ const styles = StyleSheet.create({
   senderLabel: { ...typography.small, color: colors.primaryDark },
   senderValue: { ...typography.bodyMedium, color: colors.text, marginTop: 2 },
   form: { gap: spacing.md, marginBottom: spacing.xl },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.xs + 2,
+    paddingHorizontal: spacing.sm + 2,
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.pill,
+  },
+  chipText: { ...typography.captionMedium, color: colors.primaryDark },
 });

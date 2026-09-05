@@ -1,4 +1,4 @@
-import type { Delivery, UserProfile } from '@/types';
+import type { Delivery, SavedAddress, UserProfile } from '@/types';
 import { COMMUNITY_COORDS, jitterCoordinate } from '@/lib/geo';
 
 export const mockProfile: UserProfile = {
@@ -17,7 +17,9 @@ export const mockDeliveries: Delivery[] = [
     id: 'mock-delivery-1',
     delivery_code: 'SP-1042',
     customer_id: 'mock-user-id',
-    rider_id: null,
+    rider_id: 'mock-rider-1',
+    rider_name: 'Tunde Bakare',
+    rider_phone: '080 222 3344',
     pickup_address: 'Lusada Market, Lusada',
     pickup_landmark: 'Opposite First Bank',
     pickup_contact_name: 'Raphael',
@@ -42,6 +44,8 @@ export const mockDeliveries: Delivery[] = [
     pickup_photo_url: null,
     delivery_photo_url: null,
     status: 'in_transit',
+    rating: null,
+    rating_comment: null,
     created_at: '2026-09-01T10:30:00Z',
     assigned_at: '2026-09-01T11:00:00Z',
     picked_up_at: '2026-09-01T11:15:00Z',
@@ -51,7 +55,9 @@ export const mockDeliveries: Delivery[] = [
     id: 'mock-delivery-2',
     delivery_code: 'SP-1039',
     customer_id: 'mock-user-id',
-    rider_id: null,
+    rider_id: 'mock-rider-2',
+    rider_name: 'Chidi Okonkwo',
+    rider_phone: '080 444 5566',
     pickup_address: 'Igbesa Junction, Igbesa',
     pickup_landmark: null,
     pickup_contact_name: 'Raphael',
@@ -76,10 +82,24 @@ export const mockDeliveries: Delivery[] = [
     pickup_photo_url: null,
     delivery_photo_url: null,
     status: 'delivered',
+    rating: 5,
+    rating_comment: 'Fast and friendly!',
     created_at: '2026-08-28T14:00:00Z',
     assigned_at: '2026-08-28T14:30:00Z',
     picked_up_at: '2026-08-28T14:45:00Z',
     delivered_at: '2026-08-28T15:20:00Z',
+  },
+];
+
+export const mockSavedAddresses: SavedAddress[] = [
+  {
+    id: 'saved-home',
+    label: 'Home',
+    address: 'Igbesa Junction, Igbesa',
+    landmark: 'Near the filling station',
+    contact_name: 'Raphael',
+    contact_phone: '080 123 4567',
+    zone: 'igbesa',
   },
 ];
 

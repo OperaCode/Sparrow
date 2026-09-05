@@ -59,6 +59,8 @@ export interface Delivery {
   delivery_code: string;
   customer_id: string;
   rider_id: string | null;
+  rider_name: string | null;
+  rider_phone: string | null;
   pickup_address: string;
   pickup_landmark: string | null;
   pickup_contact_name: string;
@@ -83,10 +85,22 @@ export interface Delivery {
   pickup_photo_url: string | null;
   delivery_photo_url: string | null;
   status: DeliveryStatus;
+  rating: number | null;
+  rating_comment: string | null;
   created_at: string;
   assigned_at: string | null;
   picked_up_at: string | null;
   delivered_at: string | null;
+}
+
+export interface SavedAddress {
+  id: string;
+  label: string;
+  address: string;
+  landmark: string | null;
+  contact_name: string;
+  contact_phone: string;
+  zone: Community | null;
 }
 
 export interface Pricing {

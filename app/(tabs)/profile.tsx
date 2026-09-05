@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/contexts/AuthContext';
 import { colors, spacing, typography, radius, gradients } from '@/constants/theme';
-import { ChevronRight, MapPin, Package, Bookmark, Gift, FileText, HelpCircle, LogOut } from 'lucide-react-native';
+import { ChevronRight, MapPin, Package, Bookmark, Gift, FileText, HelpCircle, LogOut, Pencil } from 'lucide-react-native';
 import { Badge } from '@/components/Badge';
 import { SparrowLogo } from '@/components/SparrowLogo';
 
@@ -25,7 +25,7 @@ export default function ProfileScreen() {
 
   const menuItems = [
     { icon: Package, label: 'My Deliveries', onPress: () => router.push('/(tabs)/deliveries'), comingSoon: false },
-    { icon: Bookmark, label: 'Saved Locations', onPress: showComingSoon, comingSoon: true },
+    { icon: Bookmark, label: 'Saved Locations', onPress: () => router.push('/saved-locations'), comingSoon: false },
     { icon: Gift, label: 'Rewards', onPress: showComingSoon, comingSoon: true },
     { icon: FileText, label: 'Terms & Conditions', onPress: showComingSoon, comingSoon: true },
     { icon: HelpCircle, label: 'Help', onPress: showComingSoon, comingSoon: true },
@@ -42,6 +42,9 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.profileCard}>
+        <TouchableOpacity style={styles.editBtn} activeOpacity={0.85} onPress={() => router.push('/profile-edit')} hitSlop={8}>
+          <Pencil color={colors.textSecondary} size={16} strokeWidth={2} />
+        </TouchableOpacity>
         <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}>
           <Text style={styles.avatarText}>{profile?.name?.charAt(0).toUpperCase() || '?'}</Text>
         </LinearGradient>
@@ -93,6 +96,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: colors.border,
+    position: 'relative',
+  },
+  editBtn: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatar: {
     width: 72,
