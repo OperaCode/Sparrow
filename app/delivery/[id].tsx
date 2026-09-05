@@ -5,6 +5,7 @@ import { colors, spacing, typography, radius } from '@/constants/theme';
 import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
+import { DeliveryMap } from '@/components/DeliveryMap';
 import { ArrowLeft, MapPin, Package, Phone, User, SearchX } from 'lucide-react-native';
 import { useDeliveries } from '@/contexts/DeliveriesContext';
 import type { Delivery, DeliveryStatus } from '@/types';
@@ -49,6 +50,19 @@ export default function DeliveryDetailScreen() {
   }
 
   const currentStepIndex = getStatusIndex(delivery.status);
+  const pickedUpIndex = getStatusIndex('picked_up');
+  const deliveredIndex = getStatusIndex('delivered');
+  const isPickedUpOrLater = currentStepIndex >= pickedUpIndex;
+  const progress = delivery.status === 'delivered'
+    ? 1
+    : isPickedUpOrLater
+      ? Math.min(1, (currentStepIndex - pickedUpIndex) / (deliveredIndex - pickedUpIndex))
+      : 0;
+  const hasCoordinates =
+    delivery.pickup_latitude != null &&
+    delivery.pickup_longitude != null &&
+    delivery.destination_latitude != null &&
+    delivery.destination_longitude != null;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -65,6 +79,17 @@ export default function DeliveryDetailScreen() {
           {delivery.pickup_address.split(',')[0]} → {delivery.destination_address.split(',')[0]}
         </Text>
       </View>
+
+      {hasCoordinates && (
+        <View style={styles.mapWrap}>
+          <DeliveryMap
+            pickup={{ latitude: delivery.pickup_latitude!, longitude: delivery.pickup_longitude! }}
+            destination={{ latitude: delivery.destination_latitude!, longitude: delivery.destination_longitude! }}
+            progress={progress}
+            showRider={isPickedUpOrLater && delivery.status !== 'delivered'}
+          />
+        </View>
+      )}
 
       <View style={styles.timelineCard}>
         {STATUS_STEPS.map((step, index) => {
@@ -161,6 +186,7 @@ const styles = StyleSheet.create({
   deliveryCode: { ...typography.h3, color: colors.text, fontFamily: 'PlusJakartaSans-Bold' },
   routeSummary: { marginBottom: spacing.lg },
   routeText: { ...typography.body, color: colors.textSecondary },
+  mapWrap: { marginBottom: spacing.lg },
   timelineCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,

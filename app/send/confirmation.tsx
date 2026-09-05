@@ -23,7 +23,7 @@ export default function ConfirmationScreen() {
         </Text>
       </View>
 
-      <ConfettiCannon count={80} origin={{ x: SCREEN_WIDTH / 2, y: 0 }} fadeOut fallSpeed={2600} explosionSpeed={350} />
+      <ConfettiCannon count={120} origin={{ x: SCREEN_WIDTH / 2, y: 0 }} fadeOut autoStart={true} fallSpeed={1800} explosionSpeed={350} />
 
       <View style={styles.footer}>
         <Button label="Back to Home" onPress={() => router.replace('/(tabs)')} />

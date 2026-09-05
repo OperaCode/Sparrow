@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { Delivery } from '@/types';
+import type { Community, Delivery } from '@/types';
 import type { DeliveryDraft } from '@/contexts/DraftContext';
 import { mockDeliveries } from '@/lib/mockData';
+import { COMMUNITY_COORDS, jitterCoordinate } from '@/lib/geo';
 
 function nextDeliveryCode(deliveries: Delivery[]): string {
   const max = deliveries.reduce((m, d) => {
@@ -33,6 +34,11 @@ export function DeliveriesProvider({ children }: { children: ReactNode }) {
   const [deliveries, setDeliveries] = useState<Delivery[]>(mockDeliveries);
 
   const addDelivery = (draft: DeliveryDraft, customerId: string): Delivery => {
+    const pickupZone = (draft.pickupZone as Community) || 'igbesa';
+    const destinationZone = (draft.destinationZone as Community) || pickupZone;
+    const pickupCoord = jitterCoordinate(COMMUNITY_COORDS[pickupZone], draft.pickupAddress || 'pickup');
+    const destinationCoord = jitterCoordinate(COMMUNITY_COORDS[destinationZone], draft.destinationAddress || 'destination');
+
     const delivery: Delivery = {
       id: `delivery-${Date.now()}`,
       delivery_code: nextDeliveryCode(deliveries),
@@ -42,14 +48,14 @@ export function DeliveriesProvider({ children }: { children: ReactNode }) {
       pickup_landmark: draft.pickupLandmark || null,
       pickup_contact_name: draft.pickupContactName,
       pickup_contact_phone: draft.pickupContactPhone,
-      pickup_latitude: draft.pickupLatitude,
-      pickup_longitude: draft.pickupLongitude,
+      pickup_latitude: draft.pickupLatitude ?? pickupCoord.latitude,
+      pickup_longitude: draft.pickupLongitude ?? pickupCoord.longitude,
       destination_address: draft.destinationAddress,
       destination_landmark: draft.destinationLandmark || null,
       destination_contact_name: draft.destinationContactName,
       destination_contact_phone: draft.destinationContactPhone,
-      destination_latitude: draft.destinationLatitude,
-      destination_longitude: draft.destinationLongitude,
+      destination_latitude: draft.destinationLatitude ?? destinationCoord.latitude,
+      destination_longitude: draft.destinationLongitude ?? destinationCoord.longitude,
       package_category: draft.packageCategory ?? 'other',
       package_description: draft.packageDescription || null,
       package_size: draft.packageSize ?? 'small',
