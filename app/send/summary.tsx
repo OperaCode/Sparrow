@@ -9,25 +9,60 @@ import { SparrowIllustration } from '@/components/SparrowIllustration';
 import { StepHeader } from '@/components/StepHeader';
 import { useDraft } from '@/contexts/DraftContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDeliveries } from '@/contexts/DeliveriesContext';
 import { Check } from 'lucide-react-native';
-import { getMockPrice } from '@/lib/mockData';
-import type { Community } from '@/types';
+import { getSpecialPickupFee, getZonePrice } from '@/lib/pricing';
+import type { SpecialPickupTier } from '@/types';
 
 export default function SummaryScreen() {
-  const { draft, updateDraft } = useDraft();
-  const { profile } = useAuth();
+  const { draft, updateDraft, resetDraft } = useDraft();
+  const { session } = useAuth();
+  const { addDelivery } = useDeliveries();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [requestingQuote, setRequestingQuote] = useState(false);
 
-  const pickupZone = (profile?.community as Community) || 'igbesa';
-  let destZone: Community = draft.destinationZone as Community;
-  if (!destZone) {
-    const destAddr = draft.destinationAddress.toLowerCase();
-    if (destAddr.includes('lusada')) destZone = 'lusada';
-    else if (destAddr.includes('ketu')) destZone = 'ketu';
-    else destZone = pickupZone;
-  }
-  const price = getMockPrice(pickupZone, destZone);
+  const zoneResult = getZonePrice(draft.pickupZone, draft.destinationZone);
+  const specialPickupResult =
+    draft.serviceType === 'special_pickup'
+      ? getSpecialPickupFee(draft.pickupZone, draft.specialPickupZone)
+      : null;
+
+  const isManualQuote = zoneResult.price === null || (specialPickupResult ? specialPickupResult.fee === null : false);
+  const totalPrice = isManualQuote ? null : (zoneResult.price ?? 0) + (specialPickupResult?.fee ?? 0);
+
+  const handleRequestQuote = () => {
+    if (!termsAccepted) {
+      setError('Please accept the Terms & Conditions to continue');
+      return;
+    }
+    setError(null);
+    setRequestingQuote(true);
+    updateDraft({
+      zoneTier: zoneResult.tier,
+      pricingStatus: 'pending_manual_quote',
+      specialPickupTier: specialPickupResult && specialPickupResult.tier !== 'outside_area' ? specialPickupResult.tier : null,
+      specialPickupFee: null,
+      price: null,
+    });
+    const delivery = addDelivery(
+      {
+        ...draft,
+        zoneTier: zoneResult.tier,
+        pricingStatus: 'pending_manual_quote',
+        specialPickupTier: specialPickupResult && specialPickupResult.tier !== 'outside_area' ? specialPickupResult.tier : null,
+        specialPickupFee: null,
+        price: null,
+      },
+      session?.user.id ?? 'mock-user-id',
+    );
+    resetDraft();
+    setRequestingQuote(false);
+    router.replace({
+      pathname: '/send/confirmation',
+      params: { deliveryId: delivery.id, deliveryCode: delivery.delivery_code, pendingQuote: '1' },
+    });
+  };
 
   const handleContinue = () => {
     if (!termsAccepted) {
@@ -35,7 +70,14 @@ export default function SummaryScreen() {
       return;
     }
     setError(null);
-    updateDraft({ price, pickupZone, destinationZone: destZone });
+    updateDraft({
+      price: totalPrice,
+      zoneTier: zoneResult.tier,
+      pricingStatus: 'auto',
+      // Reaching this branch (isManualQuote === false) guarantees the tier is local/nearby, never outside_area.
+      specialPickupTier: (specialPickupResult?.tier as SpecialPickupTier | undefined) ?? null,
+      specialPickupFee: specialPickupResult?.fee ?? null,
+    });
     router.push('/send/payment');
   };
 
@@ -69,10 +111,25 @@ export default function SummaryScreen() {
           </View>
         </View>
 
-        <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.priceCard}>
-          <Text style={styles.priceLabel}>Delivery fee</Text>
-          <Text style={styles.priceValue}>₦{price.toLocaleString()}</Text>
-        </LinearGradient>
+        {isManualQuote ? (
+          <View style={styles.quoteCard}>
+            <Text style={styles.quoteTitle}>We need to review this route</Text>
+            <Text style={styles.quoteBody}>
+              This movement falls outside our standard zones, so Operations will confirm a price with you directly
+              before payment.
+            </Text>
+          </View>
+        ) : (
+          <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.priceCard}>
+            <Text style={styles.priceLabel}>Delivery fee</Text>
+            <Text style={styles.priceValue}>₦{totalPrice!.toLocaleString()}</Text>
+            {specialPickupResult && specialPickupResult.fee != null && (
+              <Text style={styles.priceBreakdown}>
+                Includes ₦{specialPickupResult.fee.toLocaleString()} Special Pickup fee
+              </Text>
+            )}
+          </LinearGradient>
+        )}
 
         <TouchableOpacity
           style={styles.termsRow}
@@ -92,7 +149,11 @@ export default function SummaryScreen() {
 
         {error && <Text style={styles.errorText}>{error}</Text>}
 
-        <Button label="Continue to Payment" onPress={handleContinue} />
+        {isManualQuote ? (
+          <Button label="Request a Quote" onPress={handleRequestQuote} loading={requestingQuote} />
+        ) : (
+          <Button label="Continue to Payment" onPress={handleContinue} />
+        )}
       </ScrollView>
     </View>
   );
@@ -126,6 +187,15 @@ const styles = StyleSheet.create({
   },
   priceLabel: { ...typography.bodyMedium, color: colors.white, opacity: 0.9 },
   priceValue: { ...typography.display, color: colors.white, fontSize: 36, marginTop: spacing.xs },
+  priceBreakdown: { ...typography.small, color: colors.white, opacity: 0.85, marginTop: spacing.xs },
+  quoteCard: {
+    backgroundColor: colors.warningLight,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  quoteTitle: { ...typography.bodyMedium, color: colors.warning, fontFamily: 'PlusJakartaSans-Bold', marginBottom: spacing.xs },
+  quoteBody: { ...typography.caption, color: colors.text, lineHeight: 20 },
   termsRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg },
   checkbox: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   checkboxChecked: { backgroundColor: colors.primary, borderColor: colors.primary },

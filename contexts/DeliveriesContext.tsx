@@ -16,6 +16,15 @@ function generatePin(): string {
   return String(Math.floor(1000 + Math.random() * 9000));
 }
 
+/**
+ * Opaque random token, not the raw delivery id — mirrors the DB's
+ * generate_qr_token() so the app and Phase 1 backend behave identically
+ * once this is wired to Supabase (PRD §15 anti-enumeration requirement).
+ */
+function generateQrToken(): string {
+  return Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+}
+
 interface DeliveriesContextValue {
   deliveries: Delivery[];
   addDelivery: (draft: DeliveryDraft, customerId: string) => Delivery;
@@ -38,10 +47,14 @@ export function DeliveriesProvider({ children }: { children: ReactNode }) {
   const [deliveries, setDeliveries] = useState<Delivery[]>(mockDeliveries);
 
   const addDelivery = (draft: DeliveryDraft, customerId: string): Delivery => {
-    const pickupZone = (draft.pickupZone as Community) || 'igbesa';
-    const destinationZone = (draft.destinationZone as Community) || pickupZone;
-    const pickupCoord = jitterCoordinate(COMMUNITY_COORDS[pickupZone], draft.pickupAddress || 'pickup');
-    const destinationCoord = jitterCoordinate(COMMUNITY_COORDS[destinationZone], draft.destinationAddress || 'destination');
+    const pickupCommunity: Community =
+      (draft.pickupZone && draft.pickupZone !== 'unsure' ? draft.pickupZone : null) || 'igbesa';
+    const destinationCommunity: Community =
+      (draft.destinationZone && draft.destinationZone !== 'unsure' ? draft.destinationZone : null) || pickupCommunity;
+    const pickupCoord = jitterCoordinate(COMMUNITY_COORDS[pickupCommunity], draft.pickupAddress || 'pickup');
+    const destinationCoord = jitterCoordinate(COMMUNITY_COORDS[destinationCommunity], draft.destinationAddress || 'destination');
+
+    const isPendingQuote = draft.pricingStatus === 'pending_manual_quote';
 
     const delivery: Delivery = {
       id: `delivery-${Date.now()}`,
@@ -66,14 +79,31 @@ export function DeliveriesProvider({ children }: { children: ReactNode }) {
       package_description: draft.packageDescription || null,
       package_size: draft.packageSize ?? 'small',
       package_photo_url: draft.packagePhotoUrl,
-      price: draft.price ?? 0,
+      service_type: draft.serviceType,
+      zone_tier: draft.zoneTier,
+      pricing_status: draft.pricingStatus,
+      quoted_price: null,
+      quoted_by: null,
+      quoted_at: null,
+      special_pickup_tier: draft.specialPickupTier,
+      special_pickup_fee: draft.specialPickupFee,
+      errand_category: draft.errandCategory,
+      errand_tier: draft.errandTier,
+      errand_fee: draft.errandFee,
+      estimated_item_cost: draft.estimatedItemCost,
+      actual_item_cost: null,
+      price: isPendingQuote ? null : draft.price ?? 0,
       payment_method: 'bank_transfer',
-      payment_status: 'payment_submitted',
+      payment_status: isPendingQuote ? 'awaiting_payment' : 'payment_submitted',
       delivery_pin: generatePin(),
       delivery_pin_verified: false,
+      qr_token: generateQrToken(),
+      completed_via: null,
+      pin_attempt_count: 0,
+      pin_locked_at: null,
       pickup_photo_url: null,
       delivery_photo_url: null,
-      status: 'payment_submitted',
+      status: isPendingQuote ? 'pending_manual_quote' : 'payment_submitted',
       rating: null,
       rating_comment: null,
       created_at: new Date().toISOString(),

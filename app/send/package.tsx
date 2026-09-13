@@ -11,17 +11,17 @@ import type { PackageCategory, PackageSize } from '@/types';
 
 const CATEGORIES: { value: PackageCategory; label: string; emoji: string; color: string; light: string }[] = [
   { value: 'document', label: 'Document', emoji: '📄', color: colors.sky, light: colors.skyLight },
-  { value: 'food', label: 'Food', emoji: '🍔', color: colors.coral, light: colors.coralLight },
   { value: 'clothing', label: 'Clothing', emoji: '👕', color: colors.purple, light: colors.purpleLight },
   { value: 'gift', label: 'Gift', emoji: '🎁', color: colors.pink, light: colors.pinkLight },
-  { value: 'spare_part', label: 'Spare Part', emoji: '🔧', color: colors.teal, light: colors.tealLight },
   { value: 'other', label: 'Other', emoji: '📦', color: colors.primaryDark, light: colors.primarySoft },
+  // { value: 'spare_part', label: 'Spare Part', emoji: '🔧', color: colors.teal, light: colors.tealLight },
+  { value: 'food', label: 'Food', emoji: '🍔', color: colors.coral, light: colors.coralLight },
 ];
 
-const SIZES: { value: PackageSize; label: string; description: string }[] = [
-  { value: 'small', label: 'Small', description: 'Fits in a pocket or small pouch' },
-  { value: 'medium', label: 'Medium', description: 'Fits in a backpack or handbag' },
-  { value: 'large', label: 'Large', description: 'Fits in a large bag or box' },
+const SIZES: { value: PackageSize; label: string; weight: string; description: string }[] = [
+  { value: 'small', label: 'Small', weight: 'Up to 2kg', description: 'Fits in a pocket or small pouch' },
+  { value: 'medium', label: 'Medium', weight: '2 – 5kg', description: 'Fits in a backpack or handbag' },
+  { value: 'large', label: 'Large', weight: '5 – 10kg', description: 'Fits in a large bag or box' },
 ];
 
 export default function PackageScreen() {
@@ -38,12 +38,12 @@ export default function PackageScreen() {
       return;
     }
     setError(null);
-    router.push('/send/summary');
+    router.push('/send/pickup');
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <StepHeader step={2} />
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <StepHeader step={0} />
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <IconBadge style={styles.iconBadge} background={colors.purpleLight}>
@@ -75,25 +75,31 @@ export default function PackageScreen() {
         </View>
 
         <Text style={styles.sectionLabel}>Size</Text>
-        <View style={sizeRowStyles.row}>
-          {SIZES.map((sz) => (
-            <TouchableOpacity
-              key={sz.value}
-              activeOpacity={0.85}
-              style={[styles.sizeCard, draft.packageSize === sz.value && styles.sizeSelected]}
-              onPress={() => {
-                updateDraft({ packageSize: sz.value });
-                setError(null);
-              }}
-            >
-              <Text style={[styles.sizeLabel, draft.packageSize === sz.value && styles.sizeLabelSelected]}>
-                {sz.label}
-              </Text>
-              <Text style={[styles.sizeDescription, draft.packageSize === sz.value && styles.sizeDescriptionSelected]}>
-                {sz.description}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.sizeList}>
+          {SIZES.map((sz) => {
+            const selected = draft.packageSize === sz.value;
+            return (
+              <TouchableOpacity
+                key={sz.value}
+                activeOpacity={0.85}
+                style={[styles.sizeCard, selected && styles.sizeSelected]}
+                onPress={() => {
+                  updateDraft({ packageSize: sz.value });
+                  setError(null);
+                }}
+              >
+                <View style={styles.sizeHeader}>
+                  <Text style={[styles.sizeLabel, selected && styles.sizeLabelSelected]}>{sz.label}</Text>
+                  <View style={[styles.weightBadge, selected && styles.weightBadgeSelected]}>
+                    <Text style={[styles.weightBadgeText, selected && styles.weightBadgeTextSelected]}>{sz.weight}</Text>
+                  </View>
+                </View>
+                <Text style={[styles.sizeDescription, selected && styles.sizeDescriptionSelected]}>
+                  {sz.description}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         <View style={styles.descriptionContainer}>
@@ -116,10 +122,6 @@ export default function PackageScreen() {
   );
 }
 
-const sizeRowStyles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.xl },
-});
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl },
@@ -141,21 +143,29 @@ const styles = StyleSheet.create({
   },
   categoryEmoji: { fontSize: 22 },
   categoryLabel: { ...typography.captionMedium, color: colors.text },
+  sizeList: { gap: spacing.sm, marginBottom: spacing.xl },
   sizeCard: {
-    flex: 1,
-    paddingVertical: spacing.md + 2,
-    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     backgroundColor: colors.surface,
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.lg,
-    alignItems: 'center',
-    gap: 2,
   },
   sizeSelected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
-  sizeLabel: { ...typography.bodyMedium, color: colors.text },
+  sizeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sizeLabel: { ...typography.bodyMedium, color: colors.text, fontFamily: 'PlusJakartaSans-SemiBold' },
   sizeLabelSelected: { color: colors.primaryDark, fontFamily: 'PlusJakartaSans-Bold' },
-  sizeDescription: { ...typography.small, color: colors.textSecondary, textAlign: 'center', lineHeight: 15 },
+  weightBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceAlt,
+  },
+  weightBadgeSelected: { backgroundColor: colors.primary },
+  weightBadgeText: { ...typography.small, color: colors.textSecondary, fontFamily: 'PlusJakartaSans-SemiBold' },
+  weightBadgeTextSelected: { color: colors.white },
+  sizeDescription: { ...typography.small, color: colors.textSecondary, textAlign: 'left', lineHeight: 18, marginTop: 4 },
   sizeDescriptionSelected: { color: colors.primaryDark },
   descriptionContainer: { marginBottom: spacing.lg },
   textArea: { minHeight: 80, textAlignVertical: 'top' },

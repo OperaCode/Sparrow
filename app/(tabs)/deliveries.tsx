@@ -14,6 +14,7 @@ const STATUS_VARIANT: Record<string, 'success' | 'info' | 'warning' | 'error' | 
   rider_assigned: 'info',
   picked_up: 'info',
   arrived: 'warning',
+  pending_manual_quote: 'warning',
   awaiting_payment: 'warning',
   payment_submitted: 'warning',
   payment_confirmed: 'primary',
@@ -41,7 +42,7 @@ export default function DeliveriesScreen() {
             title="Nothing here yet."
             message="Your Sparrow deliveries will appear here."
           />
-          <Button label="Send Your First Package" onPress={() => router.push('/send/pickup')} style={styles.emptyBtn} />
+          <Button label="Send Your First Package" onPress={() => router.push('/send/package')} style={styles.emptyBtn} />
         </View>
       ) : (
         <FlatList
@@ -67,7 +68,9 @@ export default function DeliveriesScreen() {
                 <Text style={styles.routePlace} numberOfLines={1}>{item.destination_address.split(',')[0]}</Text>
               </View>
               <View style={styles.cardFooter}>
-                <Text style={styles.price}>₦{Number(item.price).toLocaleString()}</Text>
+                <Text style={styles.price}>
+                  {item.price != null ? `₦${Number(item.price).toLocaleString()}` : 'Pending quote'}
+                </Text>
                 <Text style={styles.date}>
                   {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                 </Text>

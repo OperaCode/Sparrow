@@ -64,7 +64,7 @@ export default function HomeScreen() {
       </LinearGradient>
 
       <View style={styles.actionGrid}>
-        <TouchableOpacity style={styles.actionCard} activeOpacity={0.85} onPress={() => router.push('/send/pickup')}>
+        <TouchableOpacity style={styles.actionCard} activeOpacity={0.85} onPress={() => router.push('/send/package')}>
           <View style={[styles.actionIconBadge, { backgroundColor: colors.primarySoft }]}>
             <Package color={colors.primaryDark} size={19} strokeWidth={1.8} />
           </View>
@@ -115,7 +115,9 @@ export default function HomeScreen() {
             <Text style={styles.recentArrow}>→</Text>
             <Text style={styles.recentPlace}>{recentDelivery.destination_address.split(',')[0]}</Text>
           </View>
-          <Text style={styles.recentPrice}>₦{Number(recentDelivery.price).toLocaleString()}</Text>
+          <Text style={styles.recentPrice}>
+            {recentDelivery.price != null ? `₦${Number(recentDelivery.price).toLocaleString()}` : 'Pending quote'}
+          </Text>
         </TouchableOpacity>
       ) : (
         <EmptyState

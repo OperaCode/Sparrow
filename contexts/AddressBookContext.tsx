@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { SavedAddress } from '@/types';
-import { mockSavedAddresses } from '@/lib/mockData';
 
 interface AddressBookContextValue {
   savedAddresses: SavedAddress[];
@@ -15,7 +14,7 @@ const AddressBookContext = createContext<AddressBookContextValue>({
 });
 
 export function AddressBookProvider({ children }: { children: ReactNode }) {
-  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>(mockSavedAddresses);
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
 
   const addSavedAddress = (address: Omit<SavedAddress, 'id'>) => {
     setSavedAddresses((prev) => [...prev, { ...address, id: `saved-${Date.now()}` }]);

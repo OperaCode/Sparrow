@@ -7,6 +7,7 @@ export type AccountType = 'standard' | 'business';
 export type DeliveryStatus =
   | 'draft'
   | 'requested'
+  | 'pending_manual_quote'
   | 'awaiting_payment'
   | 'payment_submitted'
   | 'payment_confirmed'
@@ -19,6 +20,21 @@ export type DeliveryStatus =
   | 'delivered'
   | 'cancelled'
   | 'delivery_failed';
+
+export type ServiceType = 'standard' | 'special_pickup' | 'errand';
+
+/** Zone A/B/C are auto-priced; extended and outside_area require an Operations quote. */
+export type ZoneTier = 'A' | 'B' | 'C' | 'extended' | 'outside_area';
+
+export type PricingStatus = 'auto' | 'pending_manual_quote' | 'manual_quoted';
+
+/** local/nearby are auto-priced; extended requires an Operations quote. */
+export type SpecialPickupTier = 'local' | 'nearby' | 'extended';
+
+/** simple/moderate are auto-priced; complex requires an Operations quote. */
+export type ErrandTier = 'simple' | 'moderate' | 'complex';
+
+export type CompletedVia = 'qr_recipient' | 'admin_fallback';
 
 export type PaymentStatus =
   | 'awaiting_payment'
@@ -77,11 +93,28 @@ export interface Delivery {
   package_description: string | null;
   package_size: PackageSize;
   package_photo_url: string | null;
-  price: number;
+  service_type: ServiceType;
+  zone_tier: ZoneTier | null;
+  pricing_status: PricingStatus;
+  quoted_price: number | null;
+  quoted_by: string | null;
+  quoted_at: string | null;
+  special_pickup_tier: SpecialPickupTier | null;
+  special_pickup_fee: number | null;
+  errand_category: ErrandCategory | null;
+  errand_tier: ErrandTier | null;
+  errand_fee: number | null;
+  estimated_item_cost: number | null;
+  actual_item_cost: number | null;
+  price: number | null;
   payment_method: string;
   payment_status: PaymentStatus;
   delivery_pin: string;
   delivery_pin_verified: boolean;
+  qr_token: string | null;
+  completed_via: CompletedVia | null;
+  pin_attempt_count: number;
+  pin_locked_at: string | null;
   pickup_photo_url: string | null;
   delivery_photo_url: string | null;
   status: DeliveryStatus;

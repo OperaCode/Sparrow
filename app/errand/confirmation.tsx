@@ -8,7 +8,12 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function ErrandConfirmationScreen() {
-  const { total } = useLocalSearchParams<{ total: string }>();
+  const { deliveryId, total, pendingQuote } = useLocalSearchParams<{
+    deliveryId: string;
+    total: string;
+    pendingQuote?: string;
+  }>();
+  const isPendingQuote = pendingQuote === '1';
 
   return (
     <View style={styles.container}>
@@ -16,10 +21,11 @@ export default function ErrandConfirmationScreen() {
         <View style={styles.circle}>
           <Check color={colors.white} size={40} strokeWidth={3} />
         </View>
-        <Text style={styles.title}>Errand requested</Text>
+        <Text style={styles.title}>{isPendingQuote ? 'Quote requested' : 'Errand requested'}</Text>
         <Text style={styles.subtitle}>
-          We're finding a Sparrow near you{total ? ` — have ₦${total} ready to hand over` : ''}. You'll get a
-          notification once someone accepts.
+          {isPendingQuote
+            ? "This errand needs a bit more coordination, so Operations will confirm a price with you shortly."
+            : `We're finding a Sparrow near you${total ? ` — have ₦${total} ready to hand over` : ''}. You'll get a notification once someone accepts.`}
         </Text>
       </View>
 
@@ -27,6 +33,12 @@ export default function ErrandConfirmationScreen() {
 
       <View style={styles.footer}>
         <Button label="Back to Home" onPress={() => router.replace('/(tabs)')} />
+        <Button
+          label="Track Errand"
+          variant="ghost"
+          onPress={() => router.replace(deliveryId ? `/delivery/${deliveryId}` : '/(tabs)/deliveries')}
+          style={styles.trackBtn}
+        />
       </View>
     </View>
   );
@@ -47,4 +59,5 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   footer: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl },
+  trackBtn: { marginTop: spacing.sm },
 });

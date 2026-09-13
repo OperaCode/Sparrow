@@ -8,7 +8,12 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function ConfirmationScreen() {
-  const { deliveryId, deliveryCode } = useLocalSearchParams<{ deliveryId: string; deliveryCode: string }>();
+  const { deliveryId, deliveryCode, pendingQuote } = useLocalSearchParams<{
+    deliveryId: string;
+    deliveryCode: string;
+    pendingQuote?: string;
+  }>();
+  const isPendingQuote = pendingQuote === '1';
 
   return (
     <View style={styles.container}>
@@ -16,10 +21,12 @@ export default function ConfirmationScreen() {
         <View style={styles.circle}>
           <Check color={colors.white} size={40} strokeWidth={3} />
         </View>
-        <Text style={styles.title}>Payment received</Text>
+        <Text style={styles.title}>{isPendingQuote ? 'Quote requested' : 'Payment received'}</Text>
         <Text style={styles.subtitle}>
-          {deliveryCode ? `Your delivery ${deliveryCode} is being confirmed. ` : ''}
-          We're confirming your payment and getting your Sparrow ready.
+          {deliveryCode ? `Your delivery ${deliveryCode} ` : 'Your delivery '}
+          {isPendingQuote
+            ? "is outside our standard zones. Operations will contact you with a price shortly — no payment is needed yet."
+            : 'is being confirmed. We\'re confirming your payment and getting your Sparrow ready.'}
         </Text>
       </View>
 

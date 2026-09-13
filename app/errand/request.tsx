@@ -6,9 +6,11 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { SparrowLogo } from '@/components/SparrowLogo';
 import { ArrowLeft } from 'lucide-react-native';
-import type { ErrandCategory } from '@/types';
-
-const SERVICE_FEE = 500;
+import type { ErrandCategory, ErrandTier } from '@/types';
+import type { DeliveryDraft } from '@/contexts/DraftContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useDeliveries } from '@/contexts/DeliveriesContext';
+import { getErrandFee } from '@/lib/pricing';
 
 const CATEGORIES: { value: ErrandCategory; label: string; emoji: string; color: string; light: string }[] = [
   { value: 'groceries', label: 'Groceries', emoji: '🛒', color: colors.coral, light: colors.coralLight },
@@ -18,33 +20,89 @@ const CATEGORIES: { value: ErrandCategory; label: string; emoji: string; color: 
   { value: 'other', label: 'Other', emoji: '❓', color: colors.primaryDark, light: colors.primarySoft },
 ];
 
+const TIERS: { value: ErrandTier; label: string; description: string }[] = [
+  { value: 'simple', label: 'Simple', description: 'A straightforward purchase or task' },
+  { value: 'moderate', label: 'Moderate', description: 'Needs more coordination or handling' },
+  { value: 'complex', label: 'Complex', description: 'More involved — we\'ll confirm a price with you' },
+];
+
 export default function ErrandRequestScreen() {
+  const { profile } = useAuth();
+  const { addDelivery } = useDeliveries();
   const [category, setCategory] = useState<ErrandCategory | null>(null);
+  const [tier, setTier] = useState<ErrandTier | null>(null);
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [estimatedCost, setEstimatedCost] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const cost = parseFloat(estimatedCost) || 0;
-  const total = cost + SERVICE_FEE;
+  const errandFee = getErrandFee(tier);
+  const isManualQuote = tier === 'complex';
+  const total = errandFee != null ? cost + errandFee : null;
 
   const handleContinue = () => {
     const newErrors: Record<string, string> = {};
     if (!category) newErrors.category = 'Please select an errand type';
+    if (!tier) newErrors.tier = 'Please select how involved this is';
     if (!description.trim()) newErrors.description = 'Tell your Sparrow what to get';
     if (!location.trim()) newErrors.location = 'Address is required';
     if (!cost) newErrors.estimatedCost = 'Enter what the items should cost';
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
+    setSubmitting(true);
+
+    const draft: DeliveryDraft = {
+      pickupAddress: location,
+      pickupLandmark: '',
+      pickupContactName: profile?.name || '',
+      pickupContactPhone: profile?.phone || '',
+      pickupLatitude: null,
+      pickupLongitude: null,
+      destinationAddress: profile?.name ? `${profile.name}'s address` : 'Customer address',
+      destinationLandmark: '',
+      destinationContactName: profile?.name || '',
+      destinationContactPhone: profile?.phone || '',
+      destinationLatitude: null,
+      destinationLongitude: null,
+      packageCategory: 'other',
+      packageDescription: description,
+      packageSize: 'small',
+      packagePhotoUrl: null,
+      pickupZone: profile?.community ?? null,
+      destinationZone: profile?.community ?? null,
+      price: isManualQuote ? null : (errandFee ?? 0),
+      serviceType: 'errand',
+      zoneTier: null,
+      pricingStatus: isManualQuote ? 'pending_manual_quote' : 'auto',
+      itemLocation: 'with_me',
+      specialPickupZone: null,
+      specialPickupTier: null,
+      specialPickupFee: null,
+      errandCategory: category,
+      errandTier: tier,
+      errandFee: isManualQuote ? null : errandFee,
+      estimatedItemCost: cost,
+    };
+
+    const delivery = addDelivery(draft, profile?.id ?? 'mock-user-id');
+    setSubmitting(false);
+
     router.push({
       pathname: '/errand/confirmation',
-      params: { total: total.toLocaleString() },
+      params: {
+        deliveryId: delivery.id,
+        deliveryCode: delivery.delivery_code,
+        total: total != null ? total.toLocaleString() : '',
+        pendingQuote: isManualQuote ? '1' : '',
+      },
     });
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
           <ArrowLeft color={colors.text} size={24} strokeWidth={2} />
@@ -84,6 +142,33 @@ export default function ErrandRequestScreen() {
         </View>
         {errors.category ? <Text style={styles.errorText}>{errors.category}</Text> : null}
 
+        <Text style={styles.sectionLabel}>How involved is this?</Text>
+        <View style={styles.tierList}>
+          {TIERS.map((t) => {
+            const selected = tier === t.value;
+            return (
+              <TouchableOpacity
+                key={t.value}
+                activeOpacity={0.85}
+                style={[styles.tierCard, selected && styles.tierCardSelected]}
+                onPress={() => {
+                  setTier(t.value);
+                  setErrors((prev) => ({ ...prev, tier: '' }));
+                }}
+              >
+                <View style={styles.tierHeader}>
+                  <Text style={[styles.tierLabel, selected && styles.tierLabelSelected]}>{t.label}</Text>
+                  <Text style={[styles.tierFee, selected && styles.tierLabelSelected]}>
+                    {t.value === 'complex' ? 'Manual quote' : `₦${getErrandFee(t.value)?.toLocaleString()}`}
+                  </Text>
+                </View>
+                <Text style={styles.tierDescription}>{t.description}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        {errors.tier ? <Text style={styles.errorText}>{errors.tier}</Text> : null}
+
         <View style={styles.form}>
           <Input
             label="What should we get?"
@@ -119,16 +204,20 @@ export default function ErrandRequestScreen() {
           </View>
           <View style={styles.feeRow}>
             <Text style={styles.feeLabel}>Sparrow service fee</Text>
-            <Text style={styles.feeValue}>₦{SERVICE_FEE.toLocaleString()}</Text>
+            <Text style={styles.feeValue}>{isManualQuote ? 'Manual quote' : `₦${(errandFee ?? 0).toLocaleString()}`}</Text>
           </View>
           <View style={styles.feeDivider} />
           <View style={styles.feeRow}>
             <Text style={styles.feeTotalLabel}>You'll hand over</Text>
-            <Text style={styles.feeTotalValue}>₦{total.toLocaleString()}</Text>
+            <Text style={styles.feeTotalValue}>{total != null ? `₦${total.toLocaleString()}` : 'To be confirmed'}</Text>
           </View>
         </View>
 
-        <Button label="Find a Sparrow" onPress={handleContinue} />
+        <Button
+          label={isManualQuote ? 'Request a Quote' : 'Find a Sparrow'}
+          onPress={handleContinue}
+          loading={submitting}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -174,6 +263,20 @@ const styles = StyleSheet.create({
   },
   categoryEmoji: { fontSize: 20 },
   categoryLabel: { ...typography.small, color: colors.text, textAlign: 'center' },
+  tierList: { gap: spacing.sm, marginBottom: spacing.xs },
+  tierCard: {
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+  },
+  tierCardSelected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  tierHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  tierLabel: { ...typography.bodyMedium, color: colors.text },
+  tierLabelSelected: { color: colors.primaryDark, fontFamily: 'PlusJakartaSans-Bold' },
+  tierFee: { ...typography.captionMedium, color: colors.textSecondary },
+  tierDescription: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
   form: { gap: spacing.md, marginTop: spacing.lg, marginBottom: spacing.lg },
   textArea: { minHeight: 80, textAlignVertical: 'top' },
   feeCard: {

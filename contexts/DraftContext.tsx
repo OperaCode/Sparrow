@@ -1,5 +1,16 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { Community, PackageCategory, PackageSize } from '@/types';
+import type {
+  Community,
+  ErrandCategory,
+  ErrandTier,
+  PackageCategory,
+  PackageSize,
+  PricingStatus,
+  ServiceType,
+  SpecialPickupTier,
+  ZoneTier,
+} from '@/types';
+import type { ZoneSelection } from '@/lib/pricing';
 
 export interface DeliveryDraft {
   pickupAddress: string;
@@ -21,9 +32,25 @@ export interface DeliveryDraft {
   packageSize: PackageSize | null;
   packagePhotoUrl: string | null;
 
-  pickupZone: Community | null;
-  destinationZone: Community | null;
+  pickupZone: ZoneSelection;
+  destinationZone: ZoneSelection;
   price: number | null;
+
+  serviceType: ServiceType;
+  zoneTier: ZoneTier | null;
+  pricingStatus: PricingStatus;
+
+  // Special Pickup — "item is somewhere else" (business doc §3.2)
+  itemLocation: 'with_me' | 'elsewhere';
+  specialPickupZone: ZoneSelection;
+  specialPickupTier: SpecialPickupTier | null;
+  specialPickupFee: number | null;
+
+  // Errand
+  errandCategory: ErrandCategory | null;
+  errandTier: ErrandTier | null;
+  errandFee: number | null;
+  estimatedItemCost: number | null;
 }
 
 const initialDraft: DeliveryDraft = {
@@ -46,6 +73,17 @@ const initialDraft: DeliveryDraft = {
   pickupZone: null,
   destinationZone: null,
   price: null,
+  serviceType: 'standard',
+  zoneTier: null,
+  pricingStatus: 'auto',
+  itemLocation: 'with_me',
+  specialPickupZone: null,
+  specialPickupTier: null,
+  specialPickupFee: null,
+  errandCategory: null,
+  errandTier: null,
+  errandFee: null,
+  estimatedItemCost: null,
 };
 
 interface DraftContextValue {

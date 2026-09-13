@@ -21,7 +21,7 @@ const STATUS_STEPS: { status: DeliveryStatus; label: string }[] = [
 
 function getStatusIndex(status: DeliveryStatus): number {
   const order: DeliveryStatus[] = [
-    'draft', 'requested', 'awaiting_payment', 'payment_submitted',
+    'draft', 'requested', 'pending_manual_quote', 'awaiting_payment', 'payment_submitted',
     'payment_confirmed', 'ready_for_dispatch', 'rider_assigned',
     'picked_up', 'in_transit', 'arrived', 'pin_verified', 'delivered',
   ];
@@ -189,7 +189,9 @@ export default function DeliveryDetailScreen() {
 
         <View style={styles.priceRow}>
           <Text style={styles.detailTitle}>Delivery fee</Text>
-          <Text style={styles.priceValue}>₦{Number(delivery.price).toLocaleString()}</Text>
+          <Text style={styles.priceValue}>
+            {delivery.price != null ? `₦${Number(delivery.price).toLocaleString()}` : 'Pending quote'}
+          </Text>
         </View>
 
         <View style={styles.statusRow}>
@@ -201,11 +203,19 @@ export default function DeliveryDetailScreen() {
         </View>
       </View>
 
+      {/*
+        The rider displays a QR code to the recipient at the door; scanning it opens a
+        public web page where the recipient enters this PIN herself to confirm delivery
+        (PRD §11.7). That scan page and its rate limiting are Phase 3 work once Supabase
+        RPCs exist — for now this just shows the PIN with the correct framing.
+      */}
       {delivery.delivery_pin && delivery.status !== 'delivered' && (
         <View style={styles.pinCard}>
           <Text style={styles.pinLabel}>Delivery PIN</Text>
           <Text style={styles.pinValue}>{delivery.delivery_pin}</Text>
-          <Text style={styles.pinNote}>Share this PIN with the rider upon delivery</Text>
+          <Text style={styles.pinNote}>
+            The recipient will be asked for this PIN to confirm delivery — make sure they have it.
+          </Text>
         </View>
       )}
 

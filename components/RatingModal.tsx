@@ -26,7 +26,7 @@ export function RatingModal({ visible, deliveryCode, onClose, onSubmit }: Rating
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.sheetWrap}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.sheetWrap}>
           <View style={styles.sheet}>
             <View style={styles.header}>
               <Text style={styles.title}>Rate your delivery</Text>

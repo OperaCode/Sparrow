@@ -7,14 +7,16 @@ interface InputProps extends TextInputProps {
   containerStyle?: ViewStyle;
 }
 
-export function Input({ label, error, containerStyle, style, ...props }: InputProps) {
+export function Input({ label, error, containerStyle, style, editable = true, ...props }: InputProps) {
   return (
     <View style={containerStyle}>
       {label && <Text style={styles.label}>{label}</Text>}
       <TextInput
+        editable={editable}
         placeholderTextColor={colors.textTertiary}
         style={[
           styles.input,
+          !editable && styles.inputDisabled,
           !!error && styles.inputError,
           style,
         ]}
@@ -44,6 +46,11 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: colors.error,
+  },
+  inputDisabled: {
+    backgroundColor: colors.surfaceAlt,
+    borderColor: colors.borderLight,
+    color: colors.textSecondary,
   },
   errorText: {
     ...typography.small,
