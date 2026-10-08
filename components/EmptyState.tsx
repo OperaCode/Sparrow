@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Text, View, StyleSheet, type ViewStyle } from 'react-native';
-import { colors, spacing, typography, radius } from '@/constants/theme';
+import { colors, spacing, typography } from '@/constants/theme';
 import { IconBadge } from '@/components/IconBadge';
 import { PackageSearch } from 'lucide-react-native';
 

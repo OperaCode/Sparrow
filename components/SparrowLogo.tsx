@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, View, StyleSheet } from 'react-native';
 import { colors } from '@/constants/theme';
 
@@ -9,7 +9,7 @@ interface SparrowLogoProps {
 }
 
 export function SparrowLogo({ size = 32, color = colors.text, animated = false }: SparrowLogoProps) {
-  const wingLift = useRef(new Animated.Value(0)).current;
+  const [wingLift] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (!animated) {

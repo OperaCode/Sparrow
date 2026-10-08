@@ -6,7 +6,7 @@ Thank you for contributing to Sparrow. This guide explains how to set up the pro
 
 Prerequisites:
 
-- Node.js (LTS) and npm
+- Node.js 24 (the version in `.nvmrc`) and npm
 - The Expo Go app on a device, or an Android/iOS simulator
 
 ```bash
@@ -22,7 +22,7 @@ npm run dev
 ```
 app/          Screens and routes (Expo Router, file-based routing)
   (tabs)/     Customer bottom-tab screens
-  (rider)/    Rider screens
+  (rider)/    Rider placeholder (no rider app in V1)
   auth/       Phone, OTP and onboarding flow
   send/       Send-a-package flow
   errand/     Errand flow (food, groceries, custom requests)
@@ -39,8 +39,8 @@ supabase/     Legacy schema migrations, kept for reference (see issue #24)
 
 ## Workflow
 
-1. **Start from an issue.** Pick an open issue, and comment on it so others know you're working on it.
-2. **Branch from `main`** using `<type>/<issue-number>-<short-description>`, for example `feat/31-rider-earnings` or `fix/42-otp-resend`.
+1. **Start from an issue.** Pick an open issue, and comment on it so others know you're working on it. New issues use the bug report or feature/task templates.
+2. **Branch from `main`** using `<type>/<issue-number>-<short-description>`, for example `feat/8-grocery-cart` or `fix/42-otp-resend`.
 3. **Commit:**
 
    ```
@@ -62,11 +62,24 @@ supabase/     Legacy schema migrations, kept for reference (see issue #24)
 *Please ensure to never commit `.env` or any real keys or credentials, always 'gitignore' before push.*
 
 
-In the PR description:
+In the PR description (the PR template pre-fills this):
 
 - Link the issue (`Closes #<number>`)
 - Summarise what changed and why
 - Add screenshots for UI changes where necessary
 - Note anything you deliberately left out or deferred
 
+CI runs lint, typecheck and an Android bundle check on every pull request. It must be green before merging.
+
 **At least one maintainer review is required before merging.**
+
+## Definition of Done
+
+An issue is done when:
+
+- Its acceptance criteria are met
+- Tests are added or updated where relevant
+- CI is green
+- The PR has been reviewed and approved
+- No secrets are committed
+- Documentation, configuration and `.env.example` are updated where needed
