@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Check } from 'lucide-react-native';
-import { colors, spacing, typography, radius } from '@/constants/theme';
+import { colors, spacing, typography } from '@/constants/theme';
 import { Button } from '@/components/Button';
 import ConfettiCannon from 'react-native-confetti-cannon';
 
