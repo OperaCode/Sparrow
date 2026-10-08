@@ -23,6 +23,8 @@ export default defineConfig(
     rules: {
       'no-console': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
+      // Module augmentation (declare global { namespace Express }) needs it.
+      '@typescript-eslint/no-namespace': ['error', { allowDeclarations: true }],
       '@typescript-eslint/restrict-template-expressions': [
         'error',
         { allowNumber: true },

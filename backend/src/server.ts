@@ -1,10 +1,12 @@
 import type { Server } from 'node:http';
+import { v1Modules } from './api/v1/modules.js';
 import { createApp } from './app.js';
 import { ConfigError, loadConfig, type Config } from './config/env.js';
 import { createLogger, type Logger } from './lib/logger.js';
 import { createPrismaClient, type PrismaClient } from './lib/prisma.js';
 import { createHealthRepository } from './modules/health/health.repository.js';
 import { createHealthService } from './modules/health/health.service.js';
+import { createUsersRepository } from './modules/users/users.repository.js';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
@@ -80,7 +82,13 @@ function main(): void {
     repository: createHealthRepository(prisma),
     logger,
   });
-  const app = createApp({ config, logger, healthService });
+  const app = createApp({
+    config,
+    logger,
+    healthService,
+    authSubjects: createUsersRepository(prisma),
+    v1Modules,
+  });
 
   const server = app.listen(config.port, (error) => {
     if (error !== undefined) {

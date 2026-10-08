@@ -23,7 +23,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:reset": "prisma migrate reset --force",
-    "db:check-drift": "prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code"
+    "db:check-drift": "prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code",
+    "token:dev": "tsx --env-file-if-exists=.env scripts/issue-dev-token.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -46,6 +47,7 @@
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
     "express": "^5.2.1",
+    "jose": "^6.2.12",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
     "zod": "^4.6.5"
