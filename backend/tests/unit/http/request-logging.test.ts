@@ -1,8 +1,9 @@
-import express from 'express';
+import express, { type Request } from 'express';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import { createHttpLogger } from '../../../src/http/middleware/http-logger.js';
 import {
+  getRequestId,
   REQUEST_ID_HEADER,
   requestId,
   resolveRequestId,
@@ -38,6 +39,18 @@ function buildApp() {
 
   return { app, capture };
 }
+
+describe('getRequestId', () => {
+  it('returns the string id assigned by the middleware', () => {
+    expect(getRequestId({ id: 'trace-0001-abcd' } as Request)).toBe(
+      'trace-0001-abcd',
+    );
+  });
+
+  it('falls back when the id was assigned by something else', () => {
+    expect(getRequestId({ id: 7 } as unknown as Request)).toBe('unassigned');
+  });
+});
 
 describe('resolveRequestId', () => {
   it('generates a UUID when no id is supplied', () => {
