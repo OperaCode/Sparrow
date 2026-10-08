@@ -164,3 +164,63 @@ export interface AppNotification {
   is_read: boolean;
   created_at: string;
 }
+
+// ============================================
+// Sparrow Errands V1 — curated groceries & vendor-specific food
+// ============================================
+
+/** Sparrow's own catalogue category — not tied to any store. */
+export interface GroceryCategory {
+  id: string;
+  name: string;
+  emoji: string;
+}
+
+/**
+ * A catalogue product Sparrow will source on the customer's behalf.
+ * Deliberately has no vendor/store reference — Operations decides sourcing.
+ */
+export interface GroceryProduct {
+  id: string;
+  categoryId: string;
+  name: string;
+  description: string | null;
+  image: string | null;
+  price: number;
+  unit: string;
+  isAvailable: boolean;
+}
+
+/** A Sparrow-approved food vendor. The vendor list is controlled by Sparrow, not open to any seller. */
+export interface FoodVendor {
+  id: string;
+  name: string;
+  description: string;
+  image: string | null;
+  community: Community;
+  isActive: boolean;
+}
+
+/** A menu item, always scoped to a single vendor. */
+export interface FoodItem {
+  id: string;
+  vendorId: string;
+  category: string;
+  name: string;
+  description: string | null;
+  image: string | null;
+  price: number;
+  isAvailable: boolean;
+}
+
+export type CartItemType = 'grocery' | 'food';
+
+export interface CartItem {
+  itemId: string;
+  itemType: CartItemType;
+  name: string;
+  unit: string | null;
+  unitPrice: number;
+  quantity: number;
+  subtotal: number;
+}

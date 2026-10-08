@@ -85,3 +85,12 @@ export function getErrandFee(tier: ErrandTier | null): number | null {
   if (!tier) return null;
   return ERRAND_FEE[tier] ?? null;
 }
+
+/**
+ * Flat mock fees for the catalogue-based Errand flows (Groceries & Food carts).
+ * Purchased goods are pass-through cost; these two fees are Sparrow's actual
+ * revenue on the order and are always shown to the customer separately from
+ * the goods/food subtotal. Flat V1 mock values — not distance-based.
+ */
+export const ERRAND_CART_SERVICE_FEE = 500;
+export const ERRAND_CART_DELIVERY_FEE = 800;
