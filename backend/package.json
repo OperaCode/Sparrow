@@ -7,13 +7,21 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "postinstall": "prisma generate",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:coverage": "vitest run --coverage",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:reset": "prisma migrate reset --force",
+    "db:check-drift": "prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -25,6 +33,7 @@
     "globals": "^17.13.0",
     "pino-pretty": "^13.2.0",
     "prettier": "^3.9.9",
+    "prisma": "7.10.0",
     "supertest": "^7.3.1",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
@@ -32,6 +41,8 @@
     "vitest": "^5.0.3"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0",
     "express": "^5.2.1",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
