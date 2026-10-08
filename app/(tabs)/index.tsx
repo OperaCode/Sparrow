@@ -71,12 +71,12 @@ export default function HomeScreen() {
           <Text style={styles.actionTitle}>Send a Package</Text>
           <Text style={styles.actionSubtitle}>Get something delivered</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} activeOpacity={0.85} onPress={() => router.push('/errand/request')}>
+        <TouchableOpacity style={styles.actionCard} activeOpacity={0.85} onPress={() => router.push('/errand/type')}>
           <View style={[styles.actionIconBadge, { backgroundColor: colors.tealLight }]}>
             <ShoppingBag color={colors.teal} size={19} strokeWidth={1.8} />
           </View>
           <Text style={styles.actionTitle}>Request an Errand</Text>
-          <Text style={styles.actionSubtitle}>Ask a Sparrow to get it for you</Text>
+          <Text style={styles.actionSubtitle}>Groceries, food & more</Text>
         </TouchableOpacity>
       </View>
 
