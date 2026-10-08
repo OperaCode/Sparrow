@@ -2,6 +2,7 @@ import type { Server } from 'node:http';
 import { v1Modules } from './api/v1/modules.js';
 import { createApp } from './app.js';
 import { ConfigError, loadConfig, type Config } from './config/env.js';
+import { applyServerTimeouts } from './http/server-timeouts.js';
 import { createLogger, type Logger } from './lib/logger.js';
 import { createPrismaClient, type PrismaClient } from './lib/prisma.js';
 import { createHealthRepository } from './modules/health/health.repository.js';
@@ -100,6 +101,7 @@ function main(): void {
       'Sparrow API listening',
     );
   });
+  applyServerTimeouts(server);
 
   registerShutdown(server, prisma, logger);
 }
