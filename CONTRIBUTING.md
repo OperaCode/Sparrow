@@ -32,6 +32,7 @@ lib/          Non-UI logic: pricing, geo helpers, catalog and mock data
 constants/    Design tokens (colors, spacing, typography, shadows)
 types/        Shared TypeScript types
 supabase/     Legacy schema migrations, kept for reference (see issue #24)
+backend/      Sparrow API (Node.js, Express, Prisma); setup in backend/README.md
 ```
 
 `lib/mockData.ts` is temporary demo data that powers the customer UI until the backend is integrated. Don't build new production logic on top of it.
