@@ -2,7 +2,7 @@ import { Router, type Express } from 'express';
 import type { RouteGuards, V1Module } from '../../src/api/v1/router.js';
 import { createApp } from '../../src/app.js';
 import { loadConfig, type Config } from '../../src/config/env.js';
-import type { AuthSubjectLookup } from '../../src/http/middleware/authenticate.js';
+import type { AuthSubjectLookup } from '../../src/http/middleware/authenticate.middleware.js';
 import { sendData } from '../../src/http/response.js';
 import { createLogger, type Logger } from '../../src/lib/logger.js';
 import { signAccessToken } from '../../src/modules/auth/access-token.service.js';

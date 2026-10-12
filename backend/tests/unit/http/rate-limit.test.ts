@@ -1,9 +1,9 @@
 import express from 'express';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { createErrorHandler } from '../../../src/http/middleware/error-handler.js';
-import { createRateLimiter } from '../../../src/http/middleware/rate-limit.js';
-import { requestId } from '../../../src/http/middleware/request-id.js';
+import { createErrorHandler } from '../../../src/http/middleware/error.middleware.js';
+import { createRateLimiter } from '../../../src/http/middleware/rate-limit.middleware.js';
+import { requestId } from '../../../src/http/middleware/request-id.middleware.js';
 import { createLogger } from '../../../src/lib/logger.js';
 import { buildTestApp, testConfig } from '../../helpers/app.js';
 import { errorOf } from '../../helpers/http.js';

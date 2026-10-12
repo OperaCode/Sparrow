@@ -184,11 +184,8 @@ export interface GroceryProduct {
   id: string;
   categoryId: string;
   name: string;
-  description: string | null;
-  image: string | null;
-  price: number;
   unit: string;
-  isAvailable: boolean;
+  priceNaira: number;
 }
 
 /** A Sparrow-approved food vendor. The vendor list is controlled by Sparrow, not open to any seller. */

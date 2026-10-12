@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { UserProfile } from '@/types';
-import { mockProfile } from '@/lib/mockData';
+import { mockProfile } from '@/lib/mock.data';
 
 interface AuthContextValue {
   session: { user: { id: string; phone?: string } } | null;

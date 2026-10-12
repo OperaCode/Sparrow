@@ -2,8 +2,8 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import { colors, spacing } from '@/constants/theme';
-import { SparrowLogo } from '@/components/SparrowLogo';
-import { ProgressDots } from '@/components/ProgressDots';
+import { SparrowLogo } from '@/components/containers/sparrow.logo';
+import { ProgressDots } from '@/components/containers/progress.container';
 
 export function StepHeader({ step }: { step: number }) {
   return (

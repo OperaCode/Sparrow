@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { ErrandCartProvider } from '@/contexts/ErrandCartContext';
+import { ErrandCartProvider } from '@/contexts/errand-cart.context';
 
 export default function ErrandLayout() {
   return (

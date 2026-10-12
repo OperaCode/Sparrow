@@ -1,5 +1,5 @@
 import { Router, type RequestHandler } from 'express';
-import type { requireRole } from '../../http/middleware/require-role.js';
+import type { requireRole } from '../../http/middleware/role.middleware.js';
 
 export interface RouteGuards {
   authenticate: RequestHandler;

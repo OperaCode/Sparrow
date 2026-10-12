@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, radius, spacing, typography } from '@/constants/theme';
-import { SparrowLogo } from '@/components/SparrowLogo';
+import { SparrowLogo } from '@/components/containers/sparrow.logo';
 import type { Coordinate } from '@/lib/geo';
 
 interface DeliveryMapProps {

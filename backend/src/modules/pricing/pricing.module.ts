@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { V1Module } from '../../api/v1/router.js';
-import { validate } from '../../http/middleware/validate.js';
+import { validate } from '../../http/middleware/validate.middleware.js';
 import type { Logger } from '../../lib/logger.js';
 import type { PrismaClient } from '../../lib/prisma.js';
 import { createPricingController } from './pricing.controller.js';

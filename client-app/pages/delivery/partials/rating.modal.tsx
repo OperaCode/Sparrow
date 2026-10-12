@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { Star, X } from 'lucide-react-native';
 import { colors, spacing, typography, radius } from '@/constants/theme';
-import { Button } from '@/components/Button';
-import { Input } from '@/components/Input';
+import { Button } from '@/components/buttons/button';
+import { Input } from '@/components/inputs/text.input';
 
 interface RatingModalProps {
   visible: boolean;
