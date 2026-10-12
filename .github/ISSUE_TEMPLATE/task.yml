@@ -1,0 +1,37 @@
+name: Feature or task
+description: New functionality, a chore or a technical task.
+title: 'feat(<scope>): '
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What this achieves and who it is for (customer, rider, Operations).
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      placeholder: '- ...'
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: How a reviewer will know this is done.
+      placeholder: '- ...'
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: What should deliberately not be built as part of this issue.
+      placeholder: '- ...'
+  - type: textarea
+    id: depends-on
+    attributes:
+      label: Depends on
+      placeholder: '- #'

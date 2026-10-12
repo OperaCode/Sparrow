@@ -1,7 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Home, Package, User } from 'lucide-react-native';
 import { colors } from '@/constants/theme';
-import { SparrowLogo } from '@/components/SparrowLogo';
 
 export default function TabLayout() {
   return (

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, type ViewStyle, type TextStyle } from 'react-native';
-import { colors, radius, typography, shadows, spacing } from '@/constants/theme';
+import { colors, radius, typography, spacing } from '@/constants/theme';
 
 type BadgeVariant = 'success' | 'info' | 'warning' | 'error' | 'neutral' | 'primary';
 

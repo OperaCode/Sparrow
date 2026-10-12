@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing } from 'react-native';
 import Svg, { Path, Ellipse, Circle, G } from 'react-native-svg';
 
@@ -13,7 +13,7 @@ interface SparrowIllustrationProps {
 const ASPECT_RATIO = 140 / 182;
 
 export function SparrowIllustration({ size = 120, animated = false }: SparrowIllustrationProps) {
-  const wingFlap = useRef(new Animated.Value(0)).current;
+  const [wingFlap] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (!animated) {
