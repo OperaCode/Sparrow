@@ -11,12 +11,12 @@ import {
   ValidationError,
   type AppError,
 } from '../../../src/http/errors.js';
-import { createErrorHandler } from '../../../src/http/middleware/error-handler.js';
-import { notFound } from '../../../src/http/middleware/not-found.js';
+import { createErrorHandler } from '../../../src/http/middleware/error.middleware.js';
+import { notFound } from '../../../src/http/middleware/not-found.middleware.js';
 import {
   REQUEST_ID_HEADER,
   requestId,
-} from '../../../src/http/middleware/request-id.js';
+} from '../../../src/http/middleware/request-id.middleware.js';
 import { sendData } from '../../../src/http/response.js';
 import { createLogger } from '../../../src/lib/logger.js';
 import { errorOf } from '../../helpers/http.js';

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Text, View, StyleSheet, type ViewStyle } from 'react-native';
 import { colors, spacing, typography, radius } from '@/constants/theme';
-import { IconBadge } from '@/components/IconBadge';
+import { IconBadge } from '@/components/containers/icon.container';
 import { PackageSearch } from 'lucide-react-native';
 
 interface EmptyStateProps {

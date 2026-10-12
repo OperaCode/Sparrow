@@ -8,7 +8,7 @@ import {
   UnauthorizedError,
 } from '../errors.js';
 import type { ErrorBody } from '../response.js';
-import { getRequestId } from './request-id.js';
+import { getRequestId } from './request-id.middleware.js';
 
 interface BodyParserError {
   type: string;

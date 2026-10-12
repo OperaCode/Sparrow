@@ -9,9 +9,9 @@ import {
   PlusJakartaSans_600SemiBold,
   PlusJakartaSans_700Bold,
 } from '@expo-google-fonts/plus-jakarta-sans';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { DeliveriesProvider } from '@/contexts/DeliveriesContext';
-import { AddressBookProvider } from '@/contexts/AddressBookContext';
+import { AuthProvider } from '@/contexts/auth.context';
+import { DeliveriesProvider } from '@/contexts/deliveries.context';
+import { AddressBookProvider } from '@/contexts/address-book.context';
 
 if (Platform.OS !== 'web') {
   SplashScreen.preventAutoHideAsync();

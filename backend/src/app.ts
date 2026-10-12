@@ -6,13 +6,13 @@ import type { Config } from './config/env.js';
 import {
   createAuthenticate,
   type AuthSubjectLookup,
-} from './http/middleware/authenticate.js';
-import { createErrorHandler } from './http/middleware/error-handler.js';
-import { createHttpLogger } from './http/middleware/http-logger.js';
-import { notFound } from './http/middleware/not-found.js';
-import { createRateLimiter } from './http/middleware/rate-limit.js';
-import { REQUEST_ID_HEADER, requestId } from './http/middleware/request-id.js';
-import { requireRole } from './http/middleware/require-role.js';
+} from './http/middleware/authenticate.middleware.js';
+import { createErrorHandler } from './http/middleware/error.middleware.js';
+import { createHttpLogger } from './http/middleware/logger.middleware.js';
+import { notFound } from './http/middleware/not-found.middleware.js';
+import { createRateLimiter } from './http/middleware/rate-limit.middleware.js';
+import { REQUEST_ID_HEADER, requestId } from './http/middleware/request-id.middleware.js';
+import { requireRole } from './http/middleware/role.middleware.js';
 import type { Logger } from './lib/logger.js';
 import { createAccessTokenVerifier } from './modules/auth/access-token.service.js';
 import { createHealthController } from './modules/health/health.controller.js';

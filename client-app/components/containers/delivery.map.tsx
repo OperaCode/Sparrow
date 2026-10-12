@@ -1,7 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import { colors, radius } from '@/constants/theme';
-import { SparrowLogo } from '@/components/SparrowLogo';
+import { SparrowLogo } from '@/components/containers/sparrow.logo';
 import type { Coordinate } from '@/lib/geo';
 
 interface DeliveryMapProps {
