@@ -39,12 +39,14 @@ export default function ErrandTypeScreen() {
     if (key === 'groceries') {
       startService('groceries');
       router.push('/errand/groceries-categories');
-    } else if (key === 'food') {
+      return;
+    }
+    if (key === 'food') {
       startService('food');
       router.push('/errand/food-vendors');
-    } else {
-      router.push('/errand/request');
+      return;
     }
+    router.push('/errand/request');
   };
 
   return (

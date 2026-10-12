@@ -33,8 +33,9 @@ model User {
   createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  orders Order[] @relation("OrderCustomer")
-  quotes Order[] @relation("OrderQuotedBy")
+  orders        Order[]        @relation("OrderCustomer")
+  quotes        Order[]        @relation("OrderQuotedBy")
+  groceryOrders GroceryOrder[]
 
   @@map("users")
 }
@@ -154,4 +155,72 @@ model Order {
 
   @@index([customerId])
   @@map("orders")
+}
+
+/// Sparrow's grocery catalogue. A product has no vendor. Operations decides
+/// where it is bought. Price and availability belong to Sparrow.
+model GroceryCategory {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String           @db.VarChar(80)
+  emoji     String           @db.VarChar(16)
+  sortOrder Int              @map("sort_order")
+  products  GroceryProduct[]
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("grocery_categories")
+}
+
+model GroceryProduct {
+  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  categoryId  String             @map("category_id") @db.Uuid
+  category    GroceryCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  name        String             @db.VarChar(120)
+  description String?            @db.VarChar(200)
+  unit        String             @db.VarChar(40)
+  priceNaira  Int                @map("price_naira")
+  isAvailable Boolean            @default(true) @map("is_available")
+  lines       GroceryOrderLine[]
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([categoryId, isAvailable])
+  @@map("grocery_products")
+}
+
+/// Goods and fees copied at order time. Later catalogue or fee edits do not
+/// change this row.
+model GroceryOrder {
+  id                      String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId              String             @map("customer_id") @db.Uuid
+  customer                User               @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  destinationAddress      String             @map("destination_address") @db.VarChar(200)
+  destinationLandmark     String             @default("") @map("destination_landmark") @db.VarChar(200)
+  destinationContactName  String             @map("destination_contact_name") @db.VarChar(80)
+  destinationContactPhone String             @map("destination_contact_phone") @db.VarChar(20)
+  goodsNaira              Int                @map("goods_naira")
+  serviceNaira            Int                @map("service_naira")
+  deliveryNaira           Int                @map("delivery_naira")
+  totalNaira              Int                @map("total_naira")
+  lines                   GroceryOrderLine[]
+  createdAt               DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([customerId])
+  @@map("grocery_orders")
+}
+
+model GroceryOrderLine {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId        String         @map("order_id") @db.Uuid
+  order          GroceryOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId      String         @map("product_id") @db.Uuid
+  product        GroceryProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
+  name           String         @db.VarChar(120)
+  unit           String         @db.VarChar(40)
+  unitPriceNaira Int            @map("unit_price_naira")
+  quantity       Int
+  lineNaira      Int            @map("line_naira")
+
+  @@index([orderId])
+  @@map("grocery_order_lines")
 }

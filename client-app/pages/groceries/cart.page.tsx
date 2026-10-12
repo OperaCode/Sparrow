@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { colors, spacing, typography, radius } from '@/constants/theme';
@@ -6,11 +7,16 @@ import { QuantityStepper } from '@/components/inputs/quantity.input';
 import { EmptyState } from '@/components/containers/empty.container';
 import { Button } from '@/components/buttons/button';
 import { useErrandCart } from '@/contexts/errand-cart.context';
-import { ERRAND_CART_SERVICE_FEE, ERRAND_CART_DELIVERY_FEE } from '@/lib/pricing';
+import { useGroceryQuote } from '@/hooks/grocery.hook';
+import { GroceryBillCard } from '@/pages/groceries/partials/bill.card';
 
 export default function GroceriesCartScreen() {
   const { items, goodsSubtotal, incrementItem, decrementItem } = useErrandCart();
-  const total = goodsSubtotal + ERRAND_CART_SERVICE_FEE + ERRAND_CART_DELIVERY_FEE;
+  const lines = useMemo(
+    () => items.map((item) => ({ productId: item.itemId, quantity: item.quantity })),
+    [items],
+  );
+  const { quote, failed } = useGroceryQuote(lines);
 
   return (
     <View style={styles.container}>
@@ -38,32 +44,20 @@ export default function GroceriesCartScreen() {
                   onIncrement={() => incrementItem(item)}
                   onDecrement={() => decrementItem(item.itemId)}
                 />
-                <Text style={styles.itemSubtotal}>₦{(item.unitPrice * item.quantity).toLocaleString()}</Text>
+                <Text style={styles.itemSubtotal}>
+                  ₦{(item.unitPrice * item.quantity).toLocaleString()}
+                </Text>
               </View>
             ))}
           </View>
 
-          <View style={styles.feeCard}>
-            <View style={styles.feeRow}>
-              <Text style={styles.feeLabel}>Goods subtotal</Text>
-              <Text style={styles.feeValue}>₦{goodsSubtotal.toLocaleString()}</Text>
-            </View>
-            <View style={styles.feeRow}>
-              <Text style={styles.feeLabel}>Sparrow Errand Fee</Text>
-              <Text style={styles.feeValue}>₦{ERRAND_CART_SERVICE_FEE.toLocaleString()}</Text>
-            </View>
-            <View style={styles.feeRow}>
-              <Text style={styles.feeLabel}>Delivery</Text>
-              <Text style={styles.feeValue}>₦{ERRAND_CART_DELIVERY_FEE.toLocaleString()}</Text>
-            </View>
-            <View style={styles.feeDivider} />
-            <View style={styles.feeRow}>
-              <Text style={styles.feeTotalLabel}>TOTAL</Text>
-              <Text style={styles.feeTotalValue}>₦{total.toLocaleString()}</Text>
-            </View>
-          </View>
+          <GroceryBillCard goodsNaira={goodsSubtotal} quote={quote} failed={failed} />
 
-          <Button label="Continue to Delivery Address" onPress={() => router.push('/errand/address')} />
+          <Button
+            label="Continue to Delivery Address"
+            disabled={quote === null}
+            onPress={() => router.push('/errand/address')}
+          />
         </ScrollView>
       )}
     </View>
@@ -93,17 +87,11 @@ const styles = StyleSheet.create({
   itemInfo: { flex: 1 },
   itemName: { ...typography.bodyMedium, color: colors.text, fontFamily: 'PlusJakartaSans-SemiBold' },
   itemUnit: { ...typography.small, color: colors.textTertiary, marginTop: 1 },
-  itemSubtotal: { ...typography.captionMedium, color: colors.text, fontFamily: 'PlusJakartaSans-Bold', minWidth: 64, textAlign: 'right' },
-  feeCard: {
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.lg,
-    padding: spacing.md + 2,
-    marginBottom: spacing.xl,
+  itemSubtotal: {
+    ...typography.captionMedium,
+    color: colors.text,
+    fontFamily: 'PlusJakartaSans-Bold',
+    minWidth: 64,
+    textAlign: 'right',
   },
-  feeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.xs },
-  feeLabel: { ...typography.captionMedium, color: colors.primaryDark },
-  feeValue: { ...typography.bodyMedium, color: colors.text, fontFamily: 'PlusJakartaSans-Bold' },
-  feeDivider: { height: 1, backgroundColor: 'rgba(217,119,6,0.2)', marginVertical: spacing.xs },
-  feeTotalLabel: { ...typography.bodyMedium, color: colors.text, fontFamily: 'PlusJakartaSans-Bold' },
-  feeTotalValue: { ...typography.h3, color: colors.text },
 });

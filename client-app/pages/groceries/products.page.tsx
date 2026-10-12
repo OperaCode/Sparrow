@@ -4,48 +4,54 @@ import { colors, spacing, typography, radius } from '@/constants/theme';
 import { ScreenHeader } from '@/components/headers/screen.header';
 import { ErrandCartBar } from '@/components/containers/cart.bar';
 import { QuantityStepper } from '@/components/inputs/quantity.input';
-import { Badge } from '@/components/texts/badge.text';
+import { Loading } from '@/components/containers/loading.container';
 import { useErrandCart } from '@/contexts/errand-cart.context';
-import { getGroceryCategoryById, getGroceryProductsByCategory } from '@/lib/errand.catalog';
+import { useGroceryProducts } from '@/hooks/grocery.hook';
 
 export default function GroceryProductsScreen() {
-  const { categoryId } = useLocalSearchParams<{ categoryId: string }>();
-  const category = getGroceryCategoryById(categoryId ?? '');
-  const products = getGroceryProductsByCategory(categoryId ?? '');
+  const { categoryId, categoryName } = useLocalSearchParams<{
+    categoryId: string;
+    categoryName: string;
+  }>();
+  const { products, failed } = useGroceryProducts(categoryId ?? '');
   const { itemCount, goodsSubtotal, getQuantity, addItem, decrementItem } = useErrandCart();
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title={category?.name ?? 'Products'} />
+      <ScreenHeader title={categoryName ?? 'Products'} />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {products.map((product) => {
-          const quantity = getQuantity(product.id);
-          return (
-            <View key={product.id} style={[styles.card, !product.isAvailable && styles.cardUnavailable]}>
-              <View style={styles.cardIcon}>
-                <Text style={styles.cardEmoji}>{category?.emoji ?? '🛒'}</Text>
-              </View>
+      {products === null && !failed ? <Loading /> : null}
+      {failed ? <Text style={styles.message}>These products could not be loaded.</Text> : null}
+
+      {products !== null ? (
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {products.length === 0 ? (
+            <Text style={styles.message}>Nothing is available in this category right now.</Text>
+          ) : null}
+          {products.map((product) => (
+            <View key={product.id} style={styles.card}>
               <View style={styles.cardInfo}>
                 <Text style={styles.cardName}>{product.name}</Text>
                 <Text style={styles.cardUnit}>{product.unit}</Text>
-                <Text style={styles.cardPrice}>₦{product.price.toLocaleString()}</Text>
+                <Text style={styles.cardPrice}>₦{product.priceNaira.toLocaleString()}</Text>
               </View>
-              {product.isAvailable ? (
-                <QuantityStepper
-                  quantity={quantity}
-                  onIncrement={() =>
-                    addItem({ itemId: product.id, itemType: 'grocery', name: product.name, unit: product.unit, unitPrice: product.price })
-                  }
-                  onDecrement={() => decrementItem(product.id)}
-                />
-              ) : (
-                <Badge label="Unavailable" variant="neutral" />
-              )}
+              <QuantityStepper
+                quantity={getQuantity(product.id)}
+                onIncrement={() =>
+                  addItem({
+                    itemId: product.id,
+                    itemType: 'grocery',
+                    name: product.name,
+                    unit: product.unit,
+                    unitPrice: product.priceNaira,
+                  })
+                }
+                onDecrement={() => decrementItem(product.id)}
+              />
             </View>
-          );
-        })}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      ) : null}
 
       <ErrandCartBar
         itemCount={itemCount}
@@ -59,6 +65,7 @@ export default function GroceryProductsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl + spacing.xl, gap: spacing.sm + 2 },
+  message: { ...typography.body, color: colors.textSecondary, padding: spacing.lg },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -69,16 +76,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.md,
   },
-  cardUnavailable: { opacity: 0.55 },
-  cardIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.surfaceAlt,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardEmoji: { fontSize: 20 },
   cardInfo: { flex: 1 },
   cardName: { ...typography.bodyMedium, color: colors.text, fontFamily: 'PlusJakartaSans-SemiBold' },
   cardUnit: { ...typography.small, color: colors.textTertiary, marginTop: 1 },

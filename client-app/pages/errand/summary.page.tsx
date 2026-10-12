@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { colors, spacing, typography, radius } from '@/constants/theme';
@@ -8,6 +8,7 @@ import { useErrandCart } from '@/contexts/errand-cart.context';
 import { useAuth } from '@/contexts/auth.context';
 import { useDeliveries } from '@/contexts/deliveries.context';
 import { ERRAND_CART_SERVICE_FEE, ERRAND_CART_DELIVERY_FEE } from '@/lib/pricing';
+import { useGroceryQuote } from '@/hooks/grocery.hook';
 import type { DeliveryDraft } from '@/contexts/draft.context';
 
 export default function ErrandSummaryScreen() {
@@ -15,11 +16,22 @@ export default function ErrandSummaryScreen() {
   const { profile } = useAuth();
   const { addDelivery } = useDeliveries();
   const [submitting, setSubmitting] = useState(false);
-
-  const total = cart.goodsSubtotal + ERRAND_CART_SERVICE_FEE + ERRAND_CART_DELIVERY_FEE;
   const isFood = cart.service === 'food';
+  const groceryLines = useMemo(
+    () =>
+      isFood
+        ? []
+        : cart.items.map((item) => ({ productId: item.itemId, quantity: item.quantity })),
+    [cart.items, isFood],
+  );
+  const { quote, failed } = useGroceryQuote(groceryLines);
+  const serviceFee = isFood ? ERRAND_CART_SERVICE_FEE : quote?.serviceNaira;
+  const deliveryFee = isFood ? ERRAND_CART_DELIVERY_FEE : quote?.deliveryNaira;
+  const goods = isFood ? cart.goodsSubtotal : (quote?.goodsNaira ?? cart.goodsSubtotal);
+  const total = isFood ? cart.goodsSubtotal + ERRAND_CART_SERVICE_FEE + ERRAND_CART_DELIVERY_FEE : quote?.totalNaira;
 
   const handleSubmit = () => {
+    if (!isFood && total === undefined) return;
     setSubmitting(true);
 
     const itemsDescription = cart.items.map((i) => `${i.name} x${i.quantity}`).join(', ');
@@ -43,7 +55,7 @@ export default function ErrandSummaryScreen() {
       packagePhotoUrl: null,
       pickupZone: profile?.community ?? null,
       destinationZone: profile?.community ?? null,
-      price: total,
+      price: total ?? 0,
       serviceType: 'errand',
       zoneTier: null,
       pricingStatus: 'auto',
@@ -53,8 +65,8 @@ export default function ErrandSummaryScreen() {
       specialPickupFee: null,
       errandCategory: isFood ? 'food_pickup' : 'groceries',
       errandTier: 'simple',
-      errandFee: ERRAND_CART_SERVICE_FEE,
-      estimatedItemCost: cart.goodsSubtotal,
+      errandFee: serviceFee ?? ERRAND_CART_SERVICE_FEE,
+      estimatedItemCost: goods,
     };
 
     const delivery = addDelivery(draft, profile?.id ?? 'mock-user-id');
@@ -66,7 +78,7 @@ export default function ErrandSummaryScreen() {
       params: {
         deliveryId: delivery.id,
         deliveryCode: delivery.delivery_code,
-        total: total.toLocaleString(),
+        total: (total ?? 0).toLocaleString(),
       },
     });
   };
@@ -94,15 +106,16 @@ export default function ErrandSummaryScreen() {
 
           <View style={styles.divider} />
 
-          <Row label={isFood ? 'FOOD SUBTOTAL' : 'GOODS SUBTOTAL'} value={`₦${cart.goodsSubtotal.toLocaleString()}`} />
-          <Row label="SPARROW ERRAND FEE" value={`₦${ERRAND_CART_SERVICE_FEE.toLocaleString()}`} />
-          <Row label="DELIVERY" value={`₦${ERRAND_CART_DELIVERY_FEE.toLocaleString()}`} />
+          <Row label={isFood ? 'FOOD SUBTOTAL' : 'GOODS'} value={`₦${goods.toLocaleString()}`} />
+          <Row label="SERVICE FEE" value={serviceFee === undefined ? '…' : `₦${serviceFee.toLocaleString()}`} />
+          <Row label="DELIVERY" value={deliveryFee === undefined ? '…' : `₦${deliveryFee.toLocaleString()}`} />
+          {failed ? <Text style={styles.quoteError}>The price could not be loaded.</Text> : null}
 
           <View style={styles.divider} />
 
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>TOTAL</Text>
-            <Text style={styles.totalValue}>₦{total.toLocaleString()}</Text>
+            <Text style={styles.totalValue}>{total === undefined ? '…' : `₦${total.toLocaleString()}`}</Text>
           </View>
         </View>
 
@@ -115,7 +128,12 @@ export default function ErrandSummaryScreen() {
           </Text>
         </View>
 
-        <Button label="Send to Sparrow" onPress={handleSubmit} loading={submitting} />
+        <Button
+          label="Send to Sparrow"
+          onPress={handleSubmit}
+          loading={submitting}
+          disabled={!isFood && total === undefined}
+        />
       </ScrollView>
     </View>
   );
@@ -154,4 +172,5 @@ const styles = StyleSheet.create({
   totalValue: { ...typography.h3, color: colors.text },
   addressText: { ...typography.body, color: colors.text, marginTop: 2 },
   addressSub: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
+  quoteError: { ...typography.caption, color: colors.error, marginTop: spacing.sm },
 });
