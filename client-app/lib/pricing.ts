@@ -3,7 +3,7 @@ import type { Community, ErrandTier, SpecialPickupTier, ZoneTier } from '@/types
 /**
  * Single source of truth for Sparrow's zone/task pricing, matching the approved
  * Business Foundation & Operating Plan V1.0 (§4). The DB seed in
- * supabase/migrations must mirror these numbers exactly.
+ * supabase/migrations (repo root) must mirror these numbers exactly.
  */
 export const ZONE_TIER_PRICE: Record<'A' | 'B' | 'C', number> = {
   A: 800,
