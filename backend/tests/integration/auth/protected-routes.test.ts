@@ -1,11 +1,8 @@
 import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { createUsersRepository } from '../../../src/modules/users/users.repository.js';
-import {
-  buildTestApp,
-  protectedTestModule,
-  tokenFor,
-} from '../../helpers/app.js';
+import { createTestAccount } from '../../helpers/account.js';
+import { buildTestApp, protectedTestModule } from '../../helpers/app.js';
 import { createTestPrisma, truncateAllTables } from '../../helpers/database.js';
 import { errorOf } from '../../helpers/http.js';
 
@@ -25,38 +22,35 @@ afterAll(async () => {
 
 describe('protected routes against PostgreSQL', () => {
   it('lets an admin through an admin-only route', async () => {
-    const admin = await prisma.user.create({
-      data: { phone: '+2348030000001', role: 'admin' },
-    });
+    const admin = await createTestAccount(prisma, '+2348030000001', 'admin');
 
     const response = await request(app)
       .get('/api/v1/test-protected/admin')
-      .set('Authorization', `Bearer ${await tokenFor(admin.id)}`)
+      .set('Authorization', `Bearer ${admin.token}`)
       .expect(200);
 
     expect(response.body).toEqual({
-      data: { userId: admin.id, role: 'admin' },
+      data: { userId: admin.user.id, role: 'admin' },
     });
   });
 
   it('blocks a customer from an admin-only route', async () => {
-    const customer = await prisma.user.create({
-      data: { phone: '+2348030000002' },
-    });
+    const customer = await createTestAccount(prisma, '+2348030000002');
 
     const response = await request(app)
       .get('/api/v1/test-protected/admin')
-      .set('Authorization', `Bearer ${await tokenFor(customer.id)}`)
+      .set('Authorization', `Bearer ${customer.token}`)
       .expect(403);
 
     expect(errorOf(response).code).toBe('FORBIDDEN');
   });
 
   it('applies a demotion immediately to an already-issued token', async () => {
-    const user = await prisma.user.create({
-      data: { phone: '+2348030000003', role: 'admin' },
-    });
-    const token = await tokenFor(user.id);
+    const { user, token } = await createTestAccount(
+      prisma,
+      '+2348030000003',
+      'admin',
+    );
     await request(app)
       .get('/api/v1/test-protected/admin')
       .set('Authorization', `Bearer ${token}`)
@@ -74,10 +68,7 @@ describe('protected routes against PostgreSQL', () => {
   });
 
   it('applies a suspension immediately to an already-issued token', async () => {
-    const user = await prisma.user.create({
-      data: { phone: '+2348030000004' },
-    });
-    const token = await tokenFor(user.id);
+    const { user, token } = await createTestAccount(prisma, '+2348030000004');
     await prisma.user.update({
       where: { id: user.id },
       data: { status: 'suspended' },
@@ -92,10 +83,7 @@ describe('protected routes against PostgreSQL', () => {
   });
 
   it('rejects the token of a deleted user', async () => {
-    const user = await prisma.user.create({
-      data: { phone: '+2348030000005' },
-    });
-    const token = await tokenFor(user.id);
+    const { user, token } = await createTestAccount(prisma, '+2348030000005');
     await prisma.user.delete({ where: { id: user.id } });
 
     await request(app)

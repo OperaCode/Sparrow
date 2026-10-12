@@ -1,5 +1,5 @@
 import type { Server } from 'node:http';
-import { v1Modules } from './api/v1/modules.js';
+import { createV1Modules } from './api/v1/modules.js';
 import { createApp } from './app.js';
 import { ConfigError, loadConfig, type Config } from './config/env.js';
 import { applyServerTimeouts } from './http/server-timeouts.js';
@@ -88,7 +88,7 @@ function main(): void {
     logger,
     healthService,
     authSubjects: createUsersRepository(prisma),
-    v1Modules,
+    v1Modules: createV1Modules({ prisma, logger }),
   });
 
   const server = app.listen(config.port, (error) => {
