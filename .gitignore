@@ -1,35 +1,23 @@
-# dependencies
+# OS
+.DS_Store
+
+# Secrets and local env. Each package also ignores its own .env.
+.env
+.env.*
+!.env.example
+
+# Dependencies, if installed at the repo root
 node_modules/
 
-# expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
+# Editors
+.idea/
+.vscode/
+*.swp
 
-# native
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macos
-.DS_Store
-*.pem
-
-# local env files
-.env*.local
-.env
-
-# typescript
+# TypeScript
 *.tsbuildinfo
