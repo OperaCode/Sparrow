@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = () => {
     setIsAuthed(true);
+    setProfile(mockProfile);
   };
 
   const signOut = () => {

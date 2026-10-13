@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/contexts/AuthContext';
 import { colors, spacing, typography, radius, gradients } from '@/constants/theme';
-import { ChevronRight, MapPin, Package, Bookmark, Gift, FileText, HelpCircle, LogOut, Pencil } from 'lucide-react-native';
+import { ChevronRight, MapPin, Package, Bookmark, Gift, FileText, HelpCircle, LogOut, Pencil, ShieldCheck } from 'lucide-react-native';
 import { Badge } from '@/components/Badge';
 import { SparrowLogo } from '@/components/SparrowLogo';
 
@@ -23,7 +23,10 @@ export default function ProfileScreen() {
     ? profile.community.charAt(0).toUpperCase() + profile.community.slice(1)
     : '';
 
+    console.log(profile?.role);
+
   const menuItems = [
+    ...(profile?.role === 'admin' ? [{ icon: ShieldCheck, label: 'Operations', onPress: () => router.push('/operations'), comingSoon: false }] : []),
     { icon: Package, label: 'My Deliveries', onPress: () => router.push('/(tabs)/deliveries'), comingSoon: false },
     { icon: Bookmark, label: 'Saved Locations', onPress: () => router.push('/saved-locations'), comingSoon: false },
     { icon: Gift, label: 'Rewards', onPress: showComingSoon, comingSoon: true },

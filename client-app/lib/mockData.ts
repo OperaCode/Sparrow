@@ -6,7 +6,7 @@ export const mockProfile: UserProfile = {
   phone: '+234 801 234 5678',
   name: 'Raphael',
   community: 'igbesa',
-  role: 'customer',
+  role: 'admin',
   account_type: 'standard',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
