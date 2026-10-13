@@ -9,9 +9,11 @@ Prerequisites:
 - Node.js (LTS) and npm
 - The Expo Go app on a device, or an Android/iOS simulator
 
+The mobile app lives in `client-app/`. The API lives in `backend/` and has its own setup in [backend/README.md](backend/README.md).
+
 ```bash
 git clone https://github.com/OperaCode/Sparrow.git
-cd Sparrow
+cd Sparrow/client-app
 npm install
 cp .env.example .env   # fill in values if the feature you're working on needs them
 npm run dev
@@ -20,22 +22,25 @@ npm run dev
 ## Project structure
 
 ```
-app/          Screens and routes (Expo Router, file-based routing)
-  (tabs)/     Customer bottom-tab screens
-  (rider)/    Rider screens
-  auth/       Phone, OTP and onboarding flow
-  send/       Send-a-package flow
-  errand/     Errand flow (food, groceries, custom requests)
-components/   Reusable UI components
-contexts/     React context providers (auth, deliveries, drafts, cart, address book)
-lib/          Non-UI logic: pricing, geo helpers, catalog and mock data
-constants/    Design tokens (colors, spacing, typography, shadows)
-types/        Shared TypeScript types
-supabase/     Legacy schema migrations, kept for reference (see issue #24)
-backend/      Sparrow API (Node.js, Express, Prisma); setup in backend/README.md
+client-app/       Expo app (React Native, Expo Router)
+  app/            Screens and routes (file-based routing)
+    (tabs)/       Customer bottom-tab screens
+    (rider)/      Rider screens
+    auth/         Phone, OTP and onboarding flow
+    send/         Send-a-package flow
+    errand/       Errand flow (food, groceries, custom requests)
+    delivery/     Delivery detail
+  components/     Reusable UI components
+  contexts/       React context providers (auth, deliveries, drafts, cart, address book)
+  lib/            Non-UI logic: pricing, geo helpers, catalog and mock data
+  constants/      Design tokens (colors, spacing, typography, shadows)
+  types/          Shared TypeScript types
+  assets/         App icon and favicon
+supabase/         Legacy schema migrations, kept for reference (see issue #24)
+backend/          Sparrow API (Node.js, Express, Prisma); setup in backend/README.md
 ```
 
-`lib/mockData.ts` is temporary demo data that powers the customer UI until the backend is integrated. Don't build new production logic on top of it.
+`client-app/lib/mockData.ts` is temporary demo data that powers the customer UI until the backend is integrated. Don't build new production logic on top of it.
 
 
 ## Workflow
@@ -55,8 +60,8 @@ backend/      Sparrow API (Node.js, Express, Prisma); setup in backend/README.md
 
 ## Before opening a pull request
 
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
+- [ ] `npm run typecheck` passes in the package you changed (`client-app/` or `backend/`)
+- [ ] `npm run lint` passes in that package
 - [ ] The app starts and the flows you changed work on at least one platform (Android, iOS or web)
 - [ ] No secrets, debug logging or unused files are included
 
